@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AgentFlow 工作流编排器</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header><strong>AgentFlow</strong><span>企业级多 Agent 工作流编排平台</span><button id="validate">校验 DSL</button><button id="save-workflow">保存工作流</button><button id="publish-workflow">发布并运行</button><button id="export">导出 DSL</button></header>
+  <main>
+    <aside><h3>节点</h3><button data-type="start">开始节点</button><button data-type="llm">大模型节点</button><button data-type="tool">工具节点</button><button data-type="agent">Agent 节点</button><button data-type="end">结束节点</button><p class="hint">点击节点按钮添加到画布。拖动节点调整位置；点击一个节点后再点击另一个节点建立连线。</p></aside>
+    <section id="canvas"><svg id="edges"></svg><div id="nodes"></div></section>
+    <aside class="inspector"><h3>节点配置</h3><div id="empty">请选择一个节点</div><div id="form" hidden><label>ID<input id="node-id"></label><label>类型<input id="node-type" disabled></label><label>Prompt / 配置<textarea id="node-config"></textarea></label><button id="save">保存配置</button></div><pre id="output"></pre></aside>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

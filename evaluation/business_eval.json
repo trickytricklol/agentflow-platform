@@ -1,0 +1,10 @@
+[
+  {"id": "calc_total", "category": "finance", "task": "订单金额为128.50元，税率为13%，请计算含税总额，四舍五入保留两位小数。", "expected": "145.21"},
+  {"id": "classify_login", "category": "support", "task": "客户说：我连续三次输入密码都无法登录系统。工单类别只能从 ACCOUNT_ACCESS、REFUND、OTHER 中选择。只输出类别。", "expected": "ACCOUNT_ACCESS"},
+  {"id": "route_weather", "category": "tool", "task": "用户想查询上海明天的天气。可调用工具只有 weather、search、calculator。只输出工具名。", "expected": "weather"},
+  {"id": "extract_priority", "category": "extraction", "task": "从工单‘生产环境支付接口全部超时，影响线上交易，请立即处理’中提取优先级。优先级只能从 P0、P1、P2 中选择，只输出优先级。", "expected": "P0"},
+  {"id": "classify_refund", "category": "support", "task": "客户要求退回重复扣款的订单金额。工单类别只能从 ACCOUNT_ACCESS、REFUND、OTHER 中选择。只输出类别。", "expected": "REFUND"},
+  {"id": "route_search", "category": "tool", "task": "请搜索最近一周关于大模型 Agent 的行业新闻。可调用工具只有 weather、search、calculator。只输出工具名。", "expected": "search"},
+  {"id": "extract_language", "category": "extraction", "task": "用户用中文描述问题，并要求用中文回复。回复语言只能从 zh-CN、en-US 中选择，只输出语言代码。", "expected": "zh-CN"},
+  {"id": "calc_discount", "category": "finance", "task": "商品原价240元，打八五折后价格是多少？只输出数字并保留两位小数。", "expected": "204.00"}
+]
