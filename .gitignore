@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.db
+workflows.json
+audit.jsonl
+evaluation/results/*.json
+evaluation/external/BFCL/
+.venv/
+env/

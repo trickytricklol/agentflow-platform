@@ -1,0 +1,11 @@
+services:
+  agentflow-api:
+    build: ../backend
+    ports:
+      - "8080:8080"
+    environment:
+      AGENTFLOW_AUTH_ENABLED: "0"
+    volumes:
+      - agentflow-data:/app/data
+volumes:
+  agentflow-data:

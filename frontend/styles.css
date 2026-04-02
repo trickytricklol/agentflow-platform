@@ -1,0 +1,14 @@
+:root { font-family: Inter, "Microsoft YaHei", sans-serif; color: #e5e7eb; background: #0f172a; }
+* { box-sizing: border-box; } body { margin: 0; height: 100vh; overflow: hidden; }
+header { height: 58px; display: flex; align-items: center; gap: 18px; padding: 0 20px; background: #111827; border-bottom: 1px solid #293548; }
+header strong { color: #67e8f9; font-size: 20px; } header span { flex: 1; color: #94a3b8; }
+button { border: 1px solid #3b82f6; color: #dbeafe; background: #1d4ed8; border-radius: 6px; padding: 8px 12px; cursor: pointer; } button:hover { background: #2563eb; }
+main { display: grid; grid-template-columns: 180px 1fr 260px; height: calc(100vh - 58px); }
+aside { padding: 16px; background: #111827; border-right: 1px solid #293548; } aside button { width: 100%; margin-bottom: 10px; }
+.hint { color: #64748b; font-size: 12px; line-height: 1.6; } h3 { margin-top: 0; }
+#canvas { position: relative; overflow: hidden; background-color: #0b1220; background-image: radial-gradient(#26364f 1px, transparent 1px); background-size: 20px 20px; }
+#edges { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; } #nodes { position: absolute; inset: 0; }
+.node { position: absolute; min-width: 130px; padding: 12px; border: 1px solid #38bdf8; border-radius: 8px; background: #172554; box-shadow: 0 8px 24px #0005; cursor: move; user-select: none; }
+.node.selected { outline: 2px solid #facc15; } .node small { display: block; color: #93c5fd; margin-top: 4px; }
+.inspector { border-right: 0; border-left: 1px solid #293548; } label { display: block; margin: 12px 0; color: #94a3b8; font-size: 13px; } input, textarea { display: block; width: 100%; margin-top: 5px; padding: 8px; color: #e5e7eb; background: #0f172a; border: 1px solid #334155; border-radius: 5px; } textarea { min-height: 120px; }
+#output { white-space: pre-wrap; color: #86efac; font-size: 12px; margin-top: 18px; }
