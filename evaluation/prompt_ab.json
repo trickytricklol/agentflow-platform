@@ -1,0 +1,14 @@
+[
+  {"id":"math_01","task":"计算 17 + 25。","expected":"42"},
+  {"id":"math_02","task":"计算 8 * 9。","expected":"72"},
+  {"id":"math_03","task":"商品价格 240 元，打八五折后是多少元？保留两位小数。","expected":"204.00"},
+  {"id":"class_01","task":"客户连续输错密码无法登录。类别：ACCOUNT_ACCESS、REFUND、OTHER。","expected":"ACCOUNT_ACCESS"},
+  {"id":"class_02","task":"客户要求退回重复扣款。类别：ACCOUNT_ACCESS、REFUND、OTHER。","expected":"REFUND"},
+  {"id":"class_03","task":"客户询问产品使用方法，不涉及登录或退款。类别：ACCOUNT_ACCESS、REFUND、OTHER。","expected":"OTHER"},
+  {"id":"tool_01","task":"用户要查询上海天气。工具：weather、search、calculator。","expected":"weather"},
+  {"id":"tool_02","task":"用户要搜索最近的大模型行业新闻。工具：weather、search、calculator。","expected":"search"},
+  {"id":"tool_03","task":"用户要计算两个数字的乘积。工具：weather、search、calculator。","expected":"calculator"},
+  {"id":"priority_01","task":"生产支付接口全部超时，影响线上交易。优先级：P0、P1、P2。","expected":"P0"},
+  {"id":"priority_02","task":"一个低频报表页面偶发加载慢，无核心业务影响。优先级：P0、P1、P2。","expected":"P2"},
+  {"id":"language_01","task":"用户要求使用中文回复。语言：zh-CN、en-US。","expected":"zh-CN"}
+]
