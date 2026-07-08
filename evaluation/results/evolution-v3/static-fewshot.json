@@ -1,0 +1,401 @@
+{
+  "training_ids": [
+    "t11",
+    "t04",
+    "t01",
+    "t03"
+  ],
+  "prompt": "Apply the supplied business policy carefully. Return the requested JSON with the correct route and priority.\nReference training cases:\n[{\"ticket\": \"My export is blocked and I cannot finish my work.\", \"answer\": {\"route\": \"other\", \"priority\": \"P1\"}}, {\"ticket\": \"I was charged twice and need the extra payment returned.\", \"answer\": {\"route\": \"billing\", \"priority\": \"P1\"}}, {\"ticket\": \"I forgot my password and cannot sign in.\", \"answer\": {\"route\": \"access\", \"priority\": \"P1\"}}, {\"ticket\": \"All users are currently unable to authenticate.\", \"answer\": {\"route\": \"access\", \"priority\": \"P0\"}}]",
+  "result": {
+    "success": 0.6666666666666666,
+    "valid_json": 1.0,
+    "reward": 0.6666666666666666,
+    "tokens": 7917,
+    "rows": [
+      {
+        "id": "h01",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"access\", \"priority\": \"P1\"}",
+        "expected": {
+          "route": "access",
+          "priority": "P1"
+        },
+        "correct": true,
+        "valid_json": true,
+        "latency_ms": 229.319,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 312,
+        "output_tokens": 18
+      },
+      {
+        "id": "h02",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"access\", \"priority\": \"P2\"}",
+        "expected": {
+          "route": "access",
+          "priority": "P2"
+        },
+        "correct": true,
+        "valid_json": true,
+        "latency_ms": 184.48290000000006,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 307,
+        "output_tokens": 18
+      },
+      {
+        "id": "h03",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"access\", \"priority\": \"P0\"}",
+        "expected": {
+          "route": "access",
+          "priority": "P0"
+        },
+        "correct": true,
+        "valid_json": true,
+        "latency_ms": 198.24990000000008,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 309,
+        "output_tokens": 18
+      },
+      {
+        "id": "h04",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"access\", \"priority\": \"P2\"}",
+        "expected": {
+          "route": "access",
+          "priority": "P2"
+        },
+        "correct": true,
+        "valid_json": true,
+        "latency_ms": 209.6883999999999,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 316,
+        "output_tokens": 18
+      },
+      {
+        "id": "h05",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"access\", \"priority\": \"P2\"}",
+        "expected": {
+          "route": "access",
+          "priority": "P2"
+        },
+        "correct": true,
+        "valid_json": true,
+        "latency_ms": 185.7200000000001,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 318,
+        "output_tokens": 18
+      },
+      {
+        "id": "h06",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"access\", \"priority\": \"P0\"}",
+        "expected": {
+          "route": "access",
+          "priority": "P1"
+        },
+        "correct": false,
+        "valid_json": true,
+        "latency_ms": 184.8512,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 318,
+        "output_tokens": 18
+      },
+      {
+        "id": "h07",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"billing\", \"priority\": \"P1\"}",
+        "expected": {
+          "route": "billing",
+          "priority": "P1"
+        },
+        "correct": true,
+        "valid_json": true,
+        "latency_ms": 166.83920000000006,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 310,
+        "output_tokens": 18
+      },
+      {
+        "id": "h08",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"other\", \"priority\": \"P2\"}",
+        "expected": {
+          "route": "billing",
+          "priority": "P2"
+        },
+        "correct": false,
+        "valid_json": true,
+        "latency_ms": 197.9666,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 309,
+        "output_tokens": 18
+      },
+      {
+        "id": "h09",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"billing\", \"priority\": \"P1\"}",
+        "expected": {
+          "route": "billing",
+          "priority": "P0"
+        },
+        "correct": false,
+        "valid_json": true,
+        "latency_ms": 195.86090000000002,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 309,
+        "output_tokens": 18
+      },
+      {
+        "id": "h10",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"billing\", \"priority\": \"P2\"}",
+        "expected": {
+          "route": "billing",
+          "priority": "P2"
+        },
+        "correct": true,
+        "valid_json": true,
+        "latency_ms": 173.84730000000025,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 313,
+        "output_tokens": 18
+      },
+      {
+        "id": "h11",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"billing\", \"priority\": \"P1\"}",
+        "expected": {
+          "route": "billing",
+          "priority": "P1"
+        },
+        "correct": true,
+        "valid_json": true,
+        "latency_ms": 181.91259999999997,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 313,
+        "output_tokens": 18
+      },
+      {
+        "id": "h12",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"billing\", \"priority\": \"P1\"}",
+        "expected": {
+          "route": "billing",
+          "priority": "P1"
+        },
+        "correct": true,
+        "valid_json": true,
+        "latency_ms": 215.3236999999999,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 311,
+        "output_tokens": 18
+      },
+      {
+        "id": "h13",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"security\", \"priority\": \"P0\"}",
+        "expected": {
+          "route": "security",
+          "priority": "P0"
+        },
+        "correct": true,
+        "valid_json": true,
+        "latency_ms": 240.77559999999966,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 310,
+        "output_tokens": 18
+      },
+      {
+        "id": "h14",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"security\", \"priority\": \"P1\"}",
+        "expected": {
+          "route": "security",
+          "priority": "P1"
+        },
+        "correct": true,
+        "valid_json": true,
+        "latency_ms": 243.3318,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 313,
+        "output_tokens": 18
+      },
+      {
+        "id": "h15",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"other\", \"priority\": \"P2\"}",
+        "expected": {
+          "route": "security",
+          "priority": "P2"
+        },
+        "correct": false,
+        "valid_json": true,
+        "latency_ms": 236.33909999999992,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 312,
+        "output_tokens": 18
+      },
+      {
+        "id": "h16",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"billing\", \"priority\": \"P1\"}",
+        "expected": {
+          "route": "security",
+          "priority": "P1"
+        },
+        "correct": false,
+        "valid_json": true,
+        "latency_ms": 252.91319999999962,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 311,
+        "output_tokens": 18
+      },
+      {
+        "id": "h17",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"security\", \"priority\": \"P1\"}",
+        "expected": {
+          "route": "security",
+          "priority": "P1"
+        },
+        "correct": true,
+        "valid_json": true,
+        "latency_ms": 251.0441000000001,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 314,
+        "output_tokens": 18
+      },
+      {
+        "id": "h18",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"security\", \"priority\": \"P0\"}",
+        "expected": {
+          "route": "security",
+          "priority": "P0"
+        },
+        "correct": true,
+        "valid_json": true,
+        "latency_ms": 237.3894999999999,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 315,
+        "output_tokens": 18
+      },
+      {
+        "id": "h19",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"other\", \"priority\": \"P2\"}",
+        "expected": {
+          "route": "other",
+          "priority": "P2"
+        },
+        "correct": true,
+        "valid_json": true,
+        "latency_ms": 231.1719000000001,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 306,
+        "output_tokens": 18
+      },
+      {
+        "id": "h20",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"access\", \"priority\": \"P1\"}",
+        "expected": {
+          "route": "other",
+          "priority": "P1"
+        },
+        "correct": false,
+        "valid_json": true,
+        "latency_ms": 258.8229000000002,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 309,
+        "output_tokens": 18
+      },
+      {
+        "id": "h21",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"access\", \"priority\": \"P1\"}",
+        "expected": {
+          "route": "other",
+          "priority": "P0"
+        },
+        "correct": false,
+        "valid_json": true,
+        "latency_ms": 245.53029999999953,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 306,
+        "output_tokens": 18
+      },
+      {
+        "id": "h22",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"other\", \"priority\": \"P2\"}",
+        "expected": {
+          "route": "other",
+          "priority": "P2"
+        },
+        "correct": true,
+        "valid_json": true,
+        "latency_ms": 231.69359999999983,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 314,
+        "output_tokens": 18
+      },
+      {
+        "id": "h23",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"access\", \"priority\": \"P0\"}",
+        "expected": {
+          "route": "other",
+          "priority": "P2"
+        },
+        "correct": false,
+        "valid_json": true,
+        "latency_ms": 254.6531000000005,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 316,
+        "output_tokens": 18
+      },
+      {
+        "id": "h24",
+        "output": "<think>\n\n</think>\n\n{\"route\": \"other\", \"priority\": \"P2\"}",
+        "expected": {
+          "route": "other",
+          "priority": "P2"
+        },
+        "correct": true,
+        "valid_json": true,
+        "latency_ms": 242.70589999999982,
+        "status": "SUCCESS",
+        "events": 9,
+        "errors": [],
+        "input_tokens": 314,
+        "output_tokens": 18
+      }
+    ]
+  }
+}

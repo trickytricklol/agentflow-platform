@@ -4,13 +4,15 @@
 
 - 地址：`http://127.0.0.1:11434`
 - 模型：`qwen3:1.7b`（当前 MVP 默认验证模型）
+- 变异模型：`qwen3:4b`（已完成下载并用于结构搜索实验）
+- Embedding：`nomic-embed-text`（本地 768 维向量）
 - OpenAI 兼容地址：`http://127.0.0.1:11434/v1`
 
 启动/查看模型：
 
 ```powershell
 ollama list
-ollama run qwen3:0.6b
+ollama run qwen3:4b
 ```
 
 AgentFlow Provider 配置：

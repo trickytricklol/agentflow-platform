@@ -1,5 +1,7 @@
 # Prompt A/B 对比实验
 
+> 这是历史手工 A/B 演示，不是自动进化实验。12 条样本未隔离训练/测试，延迟可能受冷启动与顺序影响；输出 Token 降低不能表述为工具 Prompt 输入节省。算法效果请看 `evolution-results.md`。
+
 实验脚本：`examples/prompt_ab_experiment.py`
 
 对比：

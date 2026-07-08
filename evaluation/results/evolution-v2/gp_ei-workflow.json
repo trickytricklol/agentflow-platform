@@ -1,0 +1,64 @@
+{
+  "released": true,
+  "reason": "validation improvement",
+  "dsl": {
+    "version": "1.0",
+    "nodes": [
+      {
+        "id": "start",
+        "type": "start"
+      },
+      {
+        "id": "classify",
+        "type": "llm",
+        "config": {
+          "prompt": "Route: billing, Priority: P0 - Ticket: 'Payment processing is down right now for every user.'"
+        }
+      },
+      {
+        "id": "end",
+        "type": "end"
+      }
+    ],
+    "edges": [
+      {
+        "source": "start",
+        "target": "classify"
+      },
+      {
+        "source": "classify",
+        "target": "end"
+      }
+    ]
+  },
+  "rollback": {
+    "version": "1.0",
+    "nodes": [
+      {
+        "id": "start",
+        "type": "start"
+      },
+      {
+        "id": "classify",
+        "type": "llm",
+        "config": {
+          "prompt": "Apply the supplied business policy carefully. Return the requested JSON with the correct route and priority."
+        }
+      },
+      {
+        "id": "end",
+        "type": "end"
+      }
+    ],
+    "edges": [
+      {
+        "source": "start",
+        "target": "classify"
+      },
+      {
+        "source": "classify",
+        "target": "end"
+      }
+    ]
+  }
+}

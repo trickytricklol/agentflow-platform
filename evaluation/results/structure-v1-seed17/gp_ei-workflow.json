@@ -1,0 +1,82 @@
+{
+  "released": true,
+  "dsl": {
+    "version": "1.0",
+    "nodes": [
+      {
+        "id": "start",
+        "type": "start"
+      },
+      {
+        "id": "route",
+        "type": "llm",
+        "config": {
+          "role": "route",
+          "prompt": "Apply the supplied business policy carefully. Return the requested JSON with the correct route and priority."
+        }
+      },
+      {
+        "id": "priority",
+        "type": "llm",
+        "config": {
+          "role": "priority",
+          "prompt": "Apply the supplied business policy carefully. Return the requested JSON with the correct route and priority."
+        }
+      },
+      {
+        "id": "end",
+        "type": "end"
+      }
+    ],
+    "edges": [
+      {
+        "source": "start",
+        "target": "route"
+      },
+      {
+        "source": "route",
+        "target": "end"
+      },
+      {
+        "source": "start",
+        "target": "priority"
+      },
+      {
+        "source": "priority",
+        "target": "end"
+      }
+    ]
+  },
+  "rollback": {
+    "version": "1.0",
+    "nodes": [
+      {
+        "id": "start",
+        "type": "start"
+      },
+      {
+        "id": "classify",
+        "type": "llm",
+        "config": {
+          "role": "classify",
+          "prompt": "Apply the supplied business policy carefully. Return the requested JSON with the correct route and priority."
+        }
+      },
+      {
+        "id": "end",
+        "type": "end"
+      }
+    ],
+    "edges": [
+      {
+        "source": "start",
+        "target": "classify"
+      },
+      {
+        "source": "classify",
+        "target": "end"
+      }
+    ]
+  },
+  "reason": "strict validation improvement"
+}

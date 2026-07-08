@@ -1,0 +1,64 @@
+{
+  "released": true,
+  "reason": "validation improvement",
+  "dsl": {
+    "version": "1.0",
+    "nodes": [
+      {
+        "id": "start",
+        "type": "start"
+      },
+      {
+        "id": "classify",
+        "type": "llm",
+        "config": {
+          "prompt": "{\"route\": \"access\", \"priority\": \"P2\"}\nReference training cases (apply policy to the NEW ticket; never copy an unrelated answer):\n[{\"ticket\": \"I forgot my password and cannot sign in.\", \"answer\": {\"route\": \"access\", \"priority\": \"P1\"}}, {\"ticket\": \"I see unauthorized account access. Also please refund my subscription.\", \"answer\": {\"route\": \"security\", \"priority\": \"P1\"}}, {\"ticket\": \"My export is blocked and I cannot finish my work.\", \"answer\": {\"route\": \"other\", \"priority\": \"P1\"}}, {\"ticket\": \"Every user's dashboard is failing at the moment.\", \"answer\": {\"route\": \"other\", \"priority\": \"P0\"}}]"
+        }
+      },
+      {
+        "id": "end",
+        "type": "end"
+      }
+    ],
+    "edges": [
+      {
+        "source": "start",
+        "target": "classify"
+      },
+      {
+        "source": "classify",
+        "target": "end"
+      }
+    ]
+  },
+  "rollback": {
+    "version": "1.0",
+    "nodes": [
+      {
+        "id": "start",
+        "type": "start"
+      },
+      {
+        "id": "classify",
+        "type": "llm",
+        "config": {
+          "prompt": "Apply the supplied business policy carefully. Return the requested JSON with the correct route and priority."
+        }
+      },
+      {
+        "id": "end",
+        "type": "end"
+      }
+    ],
+    "edges": [
+      {
+        "source": "start",
+        "target": "classify"
+      },
+      {
+        "source": "classify",
+        "target": "end"
+      }
+    ]
+  }
+}

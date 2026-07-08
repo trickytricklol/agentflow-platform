@@ -1,128 +1,86 @@
-# AgentFlow Platform
+# AgentFlow · Workflow Evolution Lab
 
-> 企业级多 Agent 自进化工作流编排平台 MVP
+> 让工作流从失败轨迹中学习，以独立验证决定是否发布下一代。
 
-![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-37%20passed-2ea44f)
-![Ollama](https://img.shields.io/badge/Ollama-qwen3%3A1.7b-black)
-![License](https://img.shields.io/badge/license-MIT-green)
+Python · DAG · Ollama · Reflective Mutation · Neural Embedding · GP/EI
 
-AgentFlow 把可视化 DAG、LLM、工具、主从 Agent 和 Prompt 自进化放进同一个可运行闭环：工作流可以保存、发布、执行、观测，并基于业务评估集自动比较和选择更好的 Prompt。
+[算法协议](docs/evolution-protocol.md) · [实验结论](docs/evolution-results.md) · [数据](evaluation/triage_v1.json) · [核心实现](backend/src/agentflow/optimization/evolution.py)
 
-## 效果先看
+## 项目故事
 
-在本机 RTX 4060 Laptop 8GB + Ollama `qwen3:1.7b` 上完成 12 条业务任务 A/B 实验：
+企业工单中的“无法登录”可能是个人账户问题，也可能是全员故障；同时提到退款和异常登录时，还需要按规则确定优先级。合法 JSON 不代表正确业务决策。
 
-| 指标 | Baseline Prompt | Optimized Prompt | 变化 |
-|---|---:|---:|---:|
-| 任务准确率 | 58.3% | 58.3% | 持平 |
-| 严格 Exact Match | 0.0% | 25.0% | +25pp |
-| 平均输出 Token | 712.9 | 52.0 | -92.7% |
-| 平均延迟 | 5978ms | 414ms | -93.1% |
+AgentFlow 将执行、评估、失败反馈、候选变异、有限预算搜索与验证选版连起来。进化对象包含节点指令、训练经验示例与受限 DAG 拓扑；模型权重不变。结构搜索可在单节点、路由/优先级双专家、初判后复核之间选版，不等同于任意图生成。
 
-这组结果说明：MVP 的 Prompt 自优化首先稳定改善了输出格式、推理成本和响应延迟；准确率仍需要更强模型、更大评估集和验证/修复循环继续提升。所有结果都可用脚本复现。
-
-## 核心链路
+## 算法闭环
 
 ```mermaid
 flowchart LR
-    UI[可视化画布] --> API[Workflow API]
-    API --> DSL[DSL 校验]
-    DSL --> DAG[DAG / WorkflowEngine]
-    DAG --> LLM[LLM 节点]
-    DAG --> TOOL[Tool Router]
-    DAG --> AGENT[主从 Agent]
-    LLM --> OLLAMA[Ollama / OpenAI Compatible]
-    TOOL --> SCHEMA[JSON Schema 校验]
-    DAG --> EVENTS[SSE 事件流]
-    EVENTS --> OPT[Prompt 自进化实验]
-    OPT --> EVAL[业务评估集]
-    EVAL --> GP[GP + Expected Improvement]
-    GP --> OPT
+    G[自然语言目标] --> R[白名单奖励配置]
+    W[工作流版本] --> E[DAG实际执行]
+    E --> F[严格业务评分]
+    R --> F
+    F --> M[训练失败反思与示例回放]
+    M --> C[指令与拓扑候选池]
+    C --> B[神经Embedding + GP/EI]
+    B --> E
+    F --> V[独立验证集]
+    V --> P[版本产物与回滚DSL]
 ```
 
-## 已实现能力
+## 如何验证
 
-- DAG DSL 解析、拓扑排序、循环/不可达检测
-- `INIT / MARK / RUNNING / SUCCESS / ERROR / SKIP` 状态机
-- DAG 节点级并行、超时、取消和事件记录
-- LLM、Tool、Agent、Start、End 五类节点
-- OpenAI 兼容 Provider，可接 Ollama、DeepSeek、通义等
-- Tool Router：词法召回 + Ollama 语义精排 + JSON Schema 校验
-- 多工具并行执行和失败隔离
-- 主从 Agent 并行调度
-- Prompt 规则变异和模型驱动变异
-- TF-IDF Embedding 基线、Ollama Embedding 接口
-- Gaussian Process + Expected Improvement
-- JSON/SQLite/PostgreSQL Repository
-- SSE 运行事件、RBAC、审计日志、Docker Compose
+固定模型、业务规则和执行参数，对比固定指令、反馈随机搜索、反馈 GP/EI，并加入固定 few-shot 基线。每轮生成三个候选，只评估两个；两轮共评估四个新候选。测试集不参与变异或选版。
 
-## 快速运行
+数据为 **48 条自建模拟工单**：12 训练 / 12 验证 / 24 测试，同一业务规则下样本互不重复。不是客户生产数据，也不是 BFCL 官方测评。报告包含原始输出、候选谱系、输入/输出 Token、失败实验和统计区间。
 
-### 1. 启动 Ollama
+早期十二条样本的手工 A/B 和 BFCL 全局词法检索是探索性实验，不能作为自进化算法收益证据。当前结论以[新实验报告](docs/evolution-results.md)为准。
+
+**当前结果：闭环可运行，收益尚不稳定。** 4B 变异器生成的 seed17 冻结版本在新增模拟工单上由固定指令的 37.5% 提升至 66.7%；seed29 只有 54.2%，低于同轮静态 few-shot 的 66.7%。GP/EI 尚未证明稳定优于随机搜索，完整报告保留全部对照与 Token 成本。
+
+## 复现
+
+先运行 Ollama 服务，再在项目根目录执行：
 
 ```powershell
-ollama serve
-ollama run qwen3:1.7b
+ollama pull qwen3:1.7b
+ollama pull nomic-embed-text
+python examples/evolve_workflow.py --embedding nomic --failure-replay --output evaluation/results/my-run
+python evaluation/analyze_evolution.py evaluation/results/my-run
+python evaluation/compare_static.py evaluation/results/my-run
+python evaluation/analyze_evolution.py evaluation/results/my-run
+
+# 结构自进化：4B 负责变异，所有执行臂仍固定使用 1.7B
+ollama pull qwen3:4b
+python examples/evolve_structure.py --teacher-model qwen3:4b --seed 17 --output evaluation/results/my-structure-run
+python evaluation/analyze_structure.py evaluation/results/my-structure-run
+python evaluation/confirm_frozen.py evaluation/results/my-structure-run
+python evaluation/verify_evidence.py
 ```
 
-### 2. 运行测试
+使用新输出目录以保留历史证据。核心实验仅调用本地模型；目标 Python 版本为 3.11+。
 
 ```powershell
-cd D:\agent-workflow-platform\backend
+$env:PYTHONPATH="$PWD/backend/src"
 $env:PYTEST_DISABLE_PLUGIN_AUTOLOAD="1"
-$env:PYTHONPATH="D:\agent-workflow-platform\backend\src"
-python -m pytest -q
+python -m pytest backend/tests -q
 ```
 
-### 3. 运行 Prompt A/B 实验
+## 已实现与边界
 
-```powershell
-cd D:\agent-workflow-platform
-$env:PYTHONPATH="D:\agent-workflow-platform\backend\src"
-python examples\prompt_ab_experiment.py
-```
+| 模块 | 状态 |
+|---|---|
+| 进化算法 | 严格奖励、模型反馈变异、示例回放、受限拓扑搜索、GP/EI、验证选版和回滚产物 |
+| DAG | Kahn排序、DFS环检测、串行/分层并行 |
+| 模型与向量 | Ollama Qwen3、nomic-embed-text；TF-IDF消融选项 |
+| 工具/Agent | 注册、路由、线程池原型；未完成自主主从规划 |
+| UI/API | 可视化与HTTP原型，API部分节点仍用模拟处理器 |
+| SSE | 旧实现是执行后回放，尚非实时执行流 |
+| 超时/取消 | 线程级协作原型，不能强杀阻塞插件 |
+| 存储/鉴权 | 基础适配和测试，尚非生产验收 |
 
-结果文件：`evaluation/results/prompt_ab_latest.json`。
+Java双引擎、Kafka、Redis、完整租户隔离与生产恢复尚未交付。演示应聚焦可复现的算法实验。
 
-### 4. 启动 API 和前端
+## 研究参考
 
-```powershell
-cd D:\agent-workflow-platform\backend
-$env:PYTHONPATH="D:\agent-workflow-platform\backend\src"
-python -m agentflow.api
-```
-
-然后打开 `frontend/index.html`。
-
-## 评估与研究记录
-
-- [Prompt A/B 对比实验](docs/prompt-ab-experiment.md)
-- [Prompt 自进化分析](docs/evolution-analysis.md)
-- [真实业务评估集](evaluation/business_eval.json)
-- [BFCL 外部工具调用评估](docs/external-evaluation.md)
-- [Ollama 本地推理](docs/ollama.md)
-- [系统主规格](specs/00-main-spec.md)
-
-## 项目结构
-
-```text
-backend/src/agentflow/
-├── core/          # DAG 与 WorkflowEngine
-├── nodes/         # LLM / Tool / Agent 节点
-├── providers/     # Ollama / OpenAI-compatible Provider
-├── tools/         # Tool Router / Schema / 并行执行
-├── agents/        # 主从 Agent 调度
-├── optimization/  # Prompt 变异 / Embedding / GP 优化
-├── service/       # 工作流服务与持久化
-└── security/      # RBAC / 审计 / 指标
-```
-
-## 下一步
-
-1. 增加 30～50 条 train/validation 分离的企业任务。
-2. 加入模型验证器和失败自动修复循环，提升准确率。
-3. 使用 BFCL 多函数/并行/多轮数据继续验证 Tool Router。
-4. 接入 Prometheus、OpenTelemetry 和生产级 OIDC/JWT。
-
-项目定位是可解释、可复现的工程型 MVP：不仅展示架构，也保留测试、外部基准和真实本地模型实验结果。
+[ProTeGi](https://arxiv.org/abs/2305.03495) 提供训练错误反馈思路；[GEPA](https://arxiv.org/abs/2507.19457) 提供执行轨迹反思与变异思路。本项目是独立简化实现，不声称复现论文性能。

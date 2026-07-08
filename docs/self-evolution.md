@@ -1,5 +1,7 @@
 # Prompt 自进化 MVP 验证
 
+> 历史冒烟测试：手工构造两个候选，只能证明接口可运行，不能证明自动自进化有效。当前结构自进化与算法消融见 [evolution-results.md](evolution-results.md)。
+
 ## 闭环
 
 ```text

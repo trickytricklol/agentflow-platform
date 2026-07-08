@@ -1,0 +1,29 @@
+{
+  "provenance": "Author-created synthetic confirmation utterances, authored after exploratory algorithm runs. No candidate search or selection is allowed on this set. Same policy/domain; not independently authored, not customer logs, not proof of out-of-domain generalization.",
+  "cases": [
+    ["c01", "Only the warehouse supervisor is locked out of her account; all colleagues can authenticate.", "access", "P1"],
+    ["c02", "The analyst role lost permission to open saved reports, so our analytics group cannot work.", "access", "P1"],
+    ["c03", "For next month's onboarding, where are the instructions for granting a new employee access?", "access", "P2"],
+    ["c04", "Yesterday's sign-in failure affected the whole company, but access has been fully restored. Please explain its cause.", "access", "P2"],
+    ["c05", "Authentication is unavailable across the entire tenant right now; not a single user can enter.", "access", "P0"],
+    ["c06", "Since ten minutes ago every account has been denied login. The universal outage is still ongoing.", "access", "P0"],
+    ["c07", "The reimbursement promised for my duplicate charge never arrived, and the payment dispute is still open.", "billing", "P1"],
+    ["c08", "My card was billed for seats we never purchased. I also cannot open my legitimate account settings.", "billing", "P1"],
+    ["c09", "Before purchasing, can you explain how a VAT invoice is issued?", "billing", "P2"],
+    ["c10", "The incorrect charge has been refunded in full. May we receive a copy of the refund receipt?", "billing", "P2"],
+    ["c11", "Nobody can complete a payment on your service at present; checkout is failing for all customers.", "billing", "P0"],
+    ["c12", "Every customer is currently blocked from both paying invoices and signing in; both services are down.", "billing", "P0"],
+    ["c13", "An unrecognized person accessed my account without permission. There is no active credential theft, but the incident remains unresolved.", "security", "P1"],
+    ["c14", "We have an unresolved unauthorized-access incident and an outstanding invoice dispute. No passwords are being stolen and there is no service outage.", "security", "P1"],
+    ["c15", "Last month's unauthorized account access has been fully remediated. Can you send prevention advice?", "security", "P2"],
+    ["c16", "This is a planning question, not a current incident: how should we report suspected unauthorized access?", "security", "P2"],
+    ["c17", "An intruder is copying our users' passwords right now. We also need a refund for a mistaken charge.", "security", "P0"],
+    ["c18", "Our response team confirms credentials are actively being stolen at this moment; the theft has not been stopped.", "security", "P0"],
+    ["c19", "Only my document export is stuck, and I cannot finish my deliverable. Other users can export normally.", "other", "P1"],
+    ["c20", "The design team's preview renderer is broken and blocks their work. Login and payment functions are fine.", "other", "P1"],
+    ["c21", "Could you add keyboard shortcuts for rearranging dashboard widgets?", "other", "P2"],
+    ["c22", "The chart rendering bug is fixed and nobody is blocked anymore. Could you explain what changed?", "other", "P2"],
+    ["c23", "The document viewer has stopped working for every user and is still unavailable now.", "other", "P0"],
+    ["c24", "The reporting service is currently down for the entire user base; no one can generate any report.", "other", "P0"]
+  ]
+}

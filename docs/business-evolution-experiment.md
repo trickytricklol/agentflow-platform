@@ -1,4 +1,6 @@
-# 真实业务 Prompt 自进化实验
+# 模拟业务 Prompt 自进化早期实验
+
+> 历史探索记录：样本为自建模拟数据，不是客户真实日志；该小样本实验不能代替独立留出集和强基线比较。当前证据见 [evolution-results.md](evolution-results.md)。
 
 评估集位于 `evaluation/business_eval.json`，覆盖：
 
