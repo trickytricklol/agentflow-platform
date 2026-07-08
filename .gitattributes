@@ -1,0 +1,4 @@
+# Preserve experiment bytes: confirmation artifacts verify SHA-256 of raw reports.
+evaluation/results/** -text
+evaluation/triage*.json -text
+*.py text eol=lf
