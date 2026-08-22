@@ -13,3 +13,4 @@ jobs:
         env:
           PYTHONPATH: backend/src
           PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
+      - run: python evaluation/verify_evidence.py
