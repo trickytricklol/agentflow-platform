@@ -1,6 +1,7 @@
 """Read-only consistency checks on saved model outputs; incomplete runs are identified."""
 import json
 import hashlib
+import itertools
 import sys
 from pathlib import Path
 
@@ -56,6 +57,48 @@ def verify(folder):
     return 'PASS'
 
 
+def verify_acquisition(path):
+    report=json.loads(path.read_text(encoding='utf-8'))
+    source=ROOT/report['source_directory']/'report.json'
+    assert report['source_report_sha256']==hashlib.sha256(source.read_bytes()).hexdigest()
+    data=json.loads((ROOT/'evaluation'/'triage_v1.json').read_text(encoding='utf-8'))
+    labels={r[0]:{'route':r[2],'priority':r[3]} for r in data['train']}
+    scores={}
+    for identity,item in report['evaluations'].items():
+        assert identity==json.dumps(item['genome'],sort_keys=True,ensure_ascii=False)
+        rows=item['result']['rows']
+        assert len(rows)==len(labels) and {row['id'] for row in rows}==set(labels)
+        for row in rows:
+            assert row['expected']==labels[row['id']]
+            assert grade(row['output'],row['expected'])==(row['correct'],row['valid_json'])
+        scores[identity]=sum(row['correct'] for row in rows)/len(rows)
+        assert abs(scores[identity]-item['result']['reward'])<1e-12
+    source_report=json.loads(source.read_text(encoding='utf-8'))
+    candidate_keys=[json.dumps(g,sort_keys=True,ensure_ascii=False) for g in source_report['pool']]
+    budget=report['budget']
+    bests=[max(scores[k] for k in subset) for subset in itertools.combinations(candidate_keys,budget)]
+    result=report['result']
+    assert result['candidate_count']==len(candidate_keys)
+    assert result['oracle_score']==max(scores[k] for k in candidate_keys)
+    assert result['random_exact']['subsets']==len(bests)
+    assert abs(result['random_exact']['mean_best']-sum(bests)/len(bests))<1e-12
+    assert abs(result['random_exact']['probability_find_oracle']-sum(v==result['oracle_score'] for v in bests)/len(bests))<1e-12
+    for trajectory in result['trajectories'].values():
+        assert len(trajectory['steps'])==budget
+        seen=set()
+        for step in trajectory['steps']:
+            identity=json.dumps(step['candidate'],sort_keys=True,ensure_ascii=False)
+            assert identity in candidate_keys and identity not in seen
+            seen.add(identity)
+            assert step['score']==scores[identity]
+            assert step['tokens']==report['evaluations'][identity]['result']['tokens']
+        assert trajectory['best_score']==max(step['score'] for step in trajectory['steps'])
+        assert trajectory['tokens']==sum(step['tokens'] for step in trajectory['steps'])
+    return 'PASS'
+
+
 if __name__ == '__main__':
     for path in sorted((ROOT/'evaluation'/'results').glob('*/report.json')):
         print(path.parent.name+': '+verify(path.parent))
+    for path in sorted((ROOT/'evaluation'/'results').glob('*/acquisition.json')):
+        print(path.parent.name+': '+verify_acquisition(path))

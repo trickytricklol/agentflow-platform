@@ -1,5 +1,5 @@
 import pytest
-from agentflow.optimization.evolution import RewardSpec, grade, final_text, release_candidate, workflow_dsl, feedback_examples
+from agentflow.optimization.evolution import RewardSpec, grade, final_text, release_candidate, workflow_dsl, feedback_examples, compile_system_prompt
 from agentflow.optimization.bayesian import GaussianProcessOptimizer
 from agentflow.optimization.embeddings import TfidfEmbedding
 
@@ -50,3 +50,9 @@ def test_feedback_replay_only_reads_training_and_prioritizes_failures():
     assert 'question' not in result
     with pytest.raises(KeyError):
         feedback_examples(['classify'],train,{'rows':[{'id':'test-leak','correct':False}]})
+
+
+def test_generated_strategy_is_explicitly_subordinate_to_policy():
+    compiled=compile_system_prompt('security overrides billing','billing always wins')
+    assert compiled.index('security overrides billing') < compiled.index('billing always wins')
+    assert 'immutable policy wins' in compiled.lower()

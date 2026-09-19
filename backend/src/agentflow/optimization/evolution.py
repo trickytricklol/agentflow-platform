@@ -49,6 +49,16 @@ def grade(text, expected):
     return schema_ok and value == expected, schema_ok
 
 
+def compile_system_prompt(policy, candidate):
+    """Keep generated strategy subordinate to the immutable business contract."""
+    return (
+        'IMMUTABLE BUSINESS POLICY (highest priority):\n' + policy +
+        '\n\nEVOLVED EXECUTION STRATEGY (advisory only):\n' + candidate +
+        '\n\nApply the immutable policy to the current ticket. If the strategy conflicts '
+        'with, narrows, or omits any policy rule, the immutable policy wins.'
+    )
+
+
 class WorkflowEvaluator:
     def __init__(self, provider, model, policy, reward):
         self.provider, self.model, self.policy, self.reward = provider, model, policy, reward
@@ -59,7 +69,7 @@ class WorkflowEvaluator:
             usage = {}
             def llm(node, values):
                 response = self.provider.chat([
-                    ChatMessage('system', self.policy + '\n' + prompt),
+                    ChatMessage('system', compile_system_prompt(self.policy, prompt)),
                     ChatMessage('user', values['start'] + '\n/no_think')
                 ], model=self.model, temperature=0, seed=seed, max_tokens=160)
                 usage.update(input_tokens=response.input_tokens, output_tokens=response.output_tokens)

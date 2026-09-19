@@ -2,14 +2,25 @@
 from __future__ import annotations
 
 import json
+import math
 import time
 
 from agentflow.core import WorkflowEngine, WorkflowGraph
 from agentflow.providers import ChatMessage
-from .evolution import final_text, grade
+from .evolution import final_text, grade, compile_system_prompt
 
 
 TOPOLOGIES = ('direct', 'decompose', 'review')
+
+
+def composite_genome_vector(genome, prompt_vector, topology_weight=0.35):
+    """Unit-norm mixed representation; topology weight is fixed before outcomes."""
+    if genome['topology'] not in TOPOLOGIES or not 0 <= topology_weight <= 1:
+        raise ValueError('invalid structural vector configuration')
+    norm = math.sqrt(sum(value*value for value in prompt_vector)) or 1.0
+    text = [value/norm*math.sqrt(1-topology_weight) for value in prompt_vector]
+    topology = [math.sqrt(topology_weight) if name == genome['topology'] else 0.0 for name in TOPOLOGIES]
+    return text+topology
 
 
 def structural_dsl(genome):
@@ -53,7 +64,7 @@ class StructuralEvaluator:
                 elif role == 'review':
                     instruction += '\nAudit the draft against the original ticket and policy. Check negation, questions, resolved incidents and precedence. Correct errors if present; otherwise keep the draft. Return only final JSON with route and priority.'
                     user = json.dumps({'original_ticket': user, 'untrusted_draft': final_text(values['classify'])})
-                result = self.provider.chat([ChatMessage('system', self.policy+'\n'+instruction),
+                result = self.provider.chat([ChatMessage('system', compile_system_prompt(self.policy, instruction)),
                                              ChatMessage('user', user+'\n/no_think')],
                                             model=self.model, temperature=0, seed=seed, max_tokens=160)
                 trace.append({'node': node.id, 'input_tokens': result.input_tokens,

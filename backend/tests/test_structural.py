@@ -2,7 +2,7 @@ import pytest
 from agentflow.core import WorkflowGraph
 from agentflow.providers.base import ModelResponse
 from agentflow.optimization.evolution import RewardSpec
-from agentflow.optimization.structural import StructuralEvaluator, structural_dsl, structural_release
+from agentflow.optimization.structural import StructuralEvaluator, structural_dsl, structural_release, composite_genome_vector
 
 
 class SequenceProvider:
@@ -29,7 +29,8 @@ def test_topology_executes_real_nodes_and_counts_all_calls(topology, outputs):
     assert result['success'] == 1
     assert result['tokens'] == len(outputs)*15
     assert len(result['rows'][0]['trace']) == len(outputs)
-    assert all('immutable policy' in messages[0].content for messages in provider.calls)
+    assert all('IMMUTABLE BUSINESS POLICY' in messages[0].content for messages in provider.calls)
+    assert all('immutable policy' in messages[0].content.lower() for messages in provider.calls)
     assert all('expected' not in messages[-1].content for messages in provider.calls)
     if topology == 'review':
         assert 'untrusted_draft' in provider.calls[-1][-1].content
@@ -57,3 +58,12 @@ def test_release_changes_topology_and_can_rollback():
     assert released['rollback'] == structural_dsl(parent)
     with pytest.raises(ValueError):
         structural_dsl({'topology':'arbitrary-code','prompt':'bad'})
+
+
+def test_composite_vector_encodes_topology_and_stays_normalized():
+    direct=composite_genome_vector({'topology':'direct'},[3.0,4.0])
+    review=composite_genome_vector({'topology':'review'},[3.0,4.0])
+    assert sum(v*v for v in direct)==pytest.approx(1.0)
+    assert direct != review
+    with pytest.raises(ValueError):
+        composite_genome_vector({'topology':'unknown'},[1.0])
