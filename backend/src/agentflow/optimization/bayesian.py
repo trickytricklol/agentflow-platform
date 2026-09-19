@@ -41,17 +41,25 @@ class GaussianProcessOptimizer:
         observations = experiment.observations
         if not observations:
             return 1.0
-        matrix = [[self._kernel(vectors[left.prompt], vectors[right.prompt]) + (self.noise if index == jndex else 0.0) for jndex, right in enumerate(observations)] for index, left in enumerate(observations)]
-        target = [self._kernel(vector, vectors[item.prompt]) for item in observations]
-        alpha = self._solve(matrix, [item.score for item in observations])
-        mean = sum(weight * value for weight, value in zip(target, alpha))
-        variance = max(1e-9, self._kernel(vector, vector) - sum(weight * value for weight, value in zip(target, self._solve(matrix, target))))
+        mean, variance = self.posterior(vector, experiment, vectors)
         sigma = math.sqrt(variance)
         improvement = mean - max(item.score for item in observations)
         z = improvement / sigma
         normal_cdf = 0.5 * (1 + math.erf(z / math.sqrt(2)))
         normal_pdf = math.exp(-0.5 * z * z) / math.sqrt(2 * math.pi)
         return improvement * normal_cdf + sigma * normal_pdf
+
+    def posterior(self, vector: list[float], experiment: BayesianExperiment, vectors: dict[str, list[float]]) -> tuple[float,float]:
+        """Return GP posterior mean and variance for auditable constrained acquisition."""
+        observations=experiment.observations
+        if not observations:
+            return 0.0,self._kernel(vector,vector)
+        matrix = [[self._kernel(vectors[left.prompt], vectors[right.prompt]) + (self.noise if index == jndex else 0.0) for jndex, right in enumerate(observations)] for index, left in enumerate(observations)]
+        target = [self._kernel(vector, vectors[item.prompt]) for item in observations]
+        alpha = self._solve(matrix, [item.score for item in observations])
+        mean = sum(weight * value for weight, value in zip(target, alpha))
+        variance = max(1e-9, self._kernel(vector, vector) - sum(weight * value for weight, value in zip(target, self._solve(matrix, target))))
+        return mean,variance
 
     def _kernel(self, left: list[float], right: list[float]) -> float:
         distance = sum((a - b) ** 2 for a, b in zip(left, right))

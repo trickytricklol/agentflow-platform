@@ -4,7 +4,7 @@
 
 Python · DAG · Ollama · Reflective Mutation · Neural Embedding · GP/EI
 
-[算法协议](docs/evolution-protocol.md) · [实验结论](docs/evolution-results.md) · [方法调研](docs/research-optimization-2026.md) · [数据](evaluation/triage_v1.json) · [核心实现](backend/src/agentflow/optimization/evolution.py)
+[算法协议](docs/evolution-protocol.md) · [SafeFlow-Evo 论文规格](specs/11-safeflow-evo-paper.md) · [实验结论](docs/evolution-results.md) · [方法调研](docs/research-optimization-2026.md) · [数据](evaluation/triage_v1.json) · [核心实现](backend/src/agentflow/optimization/evolution.py)
 
 ## 项目故事
 
@@ -36,7 +36,7 @@ flowchart LR
 
 早期十二条样本的手工 A/B 和 BFCL 全局词法检索是探索性实验，不能作为自进化算法收益证据。当前结论以[新实验报告](docs/evolution-results.md)为准。
 
-**当前结果：闭环可运行，收益尚不稳定。** 早期一轮冻结版本在新增模拟工单上由固定指令的 37.5% 提升至 66.7%，另一种子低于静态 few-shot。后续审计修复了生成策略可能覆盖业务规则的问题；策略锁定后两个种子的测试基线均为 70.8%，搜索候选因验证未提升而被正确拒绝发布，但换一种表述的确认样本仅 41.7%。在两个固定候选池的 4 次预算实验里，“文本+拓扑”GP 均找到训练最优；随机命中概率分别为 78.8% 和 36.4%，但候选池数量仍不足以证明稳定泛化优势。
+**当前结果：闭环可运行，收益尚不稳定。** 早期一轮冻结版本在新增模拟工单上由固定指令的 37.5% 提升至 66.7%，另一种子低于静态 few-shot。后续审计修复了生成策略可能覆盖业务规则的问题；策略锁定后两个种子的测试基线均为 70.8%，搜索候选因验证未提升而被正确拒绝发布，但换一种表述的确认样本仅 41.7%。在两个固定候选池的 4 次预算实验里，“文本+拓扑”GP 均找到训练最优；随机命中概率分别为 78.8% 和 36.4%。最新 SafeFlow-Evo 开发池中混合 GP 以 6 次预算命中 83.3% 的安全最优，冻结确认池却没有任何安全改进候选，故所有方法均回退 50.0% 基线。现有证据支持结构特征和安全拒绝机制，但不足以声称论文级显著优势。
 
 进一步参考 GEPA/MIPRO 做了实例级 Pareto 合并和 instruction × demo 联合搜索。Pareto merge 暴露出 mini-batch 过拟合并被发布门槛拒绝；联合搜索候选在确认样本达到 62.5%–70.8%，相对同轮 41.7% 基线提升 20.8–29.1 个百分点。三次重复验证与 route/priority 切片门控只允许其中一个候选发布，避免仅凭 12 条验证样本均值上线。
 

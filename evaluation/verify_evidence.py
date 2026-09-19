@@ -10,6 +10,7 @@ sys.path.insert(0,str(ROOT/'backend'/'src'))
 from agentflow.optimization.evolution import grade
 from agentflow.optimization.pareto import instance_pareto_front, hybrid_pareto_front, complementary_pairs
 from agentflow.optimization.structural import risk_aware_release
+from agentflow.optimization.safe_bo import estimated_inference_cost, validation_feasible
 
 
 def verify(folder):
@@ -171,6 +172,65 @@ def verify_pareto(folder):
     return 'PASS'
 
 
+def verify_safeflow(path):
+    report=json.loads(path.read_text(encoding='utf-8'))
+    source=ROOT/report['source_path']
+    assert report['source_sha256']==hashlib.sha256(source.read_bytes()).hexdigest()
+    data=json.loads((ROOT/'evaluation'/'triage_v1.json').read_text(encoding='utf-8'))
+    labels={split:{r[0]:{'route':r[2],'priority':r[3]} for r in data[split]} for split in ('train','validation')}
+    training_ids=set(labels['train'])
+    candidate_keys=[]
+    for candidate in report['candidates']:
+        assert set(candidate['demo_ids'])<=training_ids
+        candidate_keys.append(json.dumps(candidate['genome'],sort_keys=True,ensure_ascii=False))
+    evaluations=report['evaluations']
+    assert len(evaluations)==len(candidate_keys)+1
+    baseline_keys=[]
+    quality={}
+    feasible={}
+    costs={}
+    for identity,item in evaluations.items():
+        assert identity==json.dumps(item['candidate']['genome'],sort_keys=True,ensure_ascii=False)
+        verify_rows(item['train']['rows'],labels['train'],True)
+        verify_rows(item['validation']['rows'],labels['validation'],True)
+        assert item['train']['reward']==item['train']['success']
+        assert item['validation']['reward']==item['validation']['success']
+        quality[identity]=item['train']['reward']
+        costs[identity]=estimated_inference_cost(item['candidate'])
+        if identity not in candidate_keys:
+            baseline_keys.append(identity)
+    assert len(baseline_keys)==1
+    baseline_key=baseline_keys[0]
+    base_validation=evaluations[baseline_key]['validation']
+    for identity,item in evaluations.items():
+        feasible[identity]=(identity==baseline_key or validation_feasible(base_validation,item['validation']))
+    result=report['result']
+    assert result['feasible_candidates']==sum(feasible[k] for k in candidate_keys)
+    oracle=max(quality[k] for k in [baseline_key]+candidate_keys if feasible[k])
+    assert result['oracle_feasible_quality']==oracle
+    subset_best=[]
+    for subset in itertools.combinations(candidate_keys,report['budget']):
+        subset_best.append(max(quality[k] for k in (baseline_key,)+subset if feasible[k]))
+    exact=result['random_exact']
+    assert exact['subsets']==len(subset_best)
+    assert abs(exact['mean_best_feasible']-sum(subset_best)/len(subset_best))<1e-12
+    assert abs(exact['probability_find_oracle']-sum(v==oracle for v in subset_best)/len(subset_best))<1e-12
+    for trajectory in result['trajectories'].values():
+        assert len(trajectory['steps'])==report['budget']
+        seen=set()
+        for step in trajectory['steps']:
+            identity=json.dumps(step['candidate']['genome'],sort_keys=True,ensure_ascii=False)
+            assert identity in candidate_keys and identity not in seen
+            seen.add(identity)
+            assert step['quality']==quality[identity]
+            assert step['feasible']==feasible[identity]
+            assert step['estimated_cost']==costs[identity]
+        selected=[baseline_key]+[json.dumps(step['candidate']['genome'],sort_keys=True,ensure_ascii=False) for step in trajectory['steps']]
+        assert trajectory['best_feasible_quality']==max(quality[k] for k in selected if feasible[k])
+        assert trajectory['estimated_cost']==sum(step['estimated_cost'] for step in trajectory['steps'])
+    return 'PASS'
+
+
 if __name__ == '__main__':
     for path in sorted((ROOT/'evaluation'/'results').glob('*/report.json')):
         payload=json.loads(path.read_text(encoding='utf-8'))
@@ -178,3 +238,5 @@ if __name__ == '__main__':
         print(path.parent.name+': '+verifier(path.parent))
     for path in sorted((ROOT/'evaluation'/'results').glob('*/acquisition.json')):
         print(path.parent.name+': '+verify_acquisition(path))
+    for path in sorted((ROOT/'evaluation'/'results').glob('*/benchmark.json')):
+        print(path.parent.name+': '+verify_safeflow(path))
