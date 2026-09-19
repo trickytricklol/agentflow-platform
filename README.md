@@ -4,7 +4,7 @@
 
 Python · DAG · Ollama · Reflective Mutation · Neural Embedding · GP/EI
 
-[算法协议](docs/evolution-protocol.md) · [实验结论](docs/evolution-results.md) · [数据](evaluation/triage_v1.json) · [核心实现](backend/src/agentflow/optimization/evolution.py)
+[算法协议](docs/evolution-protocol.md) · [实验结论](docs/evolution-results.md) · [方法调研](docs/research-optimization-2026.md) · [数据](evaluation/triage_v1.json) · [核心实现](backend/src/agentflow/optimization/evolution.py)
 
 ## 项目故事
 
@@ -38,6 +38,8 @@ flowchart LR
 
 **当前结果：闭环可运行，收益尚不稳定。** 早期一轮冻结版本在新增模拟工单上由固定指令的 37.5% 提升至 66.7%，另一种子低于静态 few-shot。后续审计修复了生成策略可能覆盖业务规则的问题；策略锁定后两个种子的测试基线均为 70.8%，搜索候选因验证未提升而被正确拒绝发布，但换一种表述的确认样本仅 41.7%。在两个固定候选池的 4 次预算实验里，“文本+拓扑”GP 均找到训练最优；随机命中概率分别为 78.8% 和 36.4%，但候选池数量仍不足以证明稳定泛化优势。
 
+进一步参考 GEPA/MIPRO 做了实例级 Pareto 合并和 instruction × demo 联合搜索。Pareto merge 暴露出 mini-batch 过拟合并被发布门槛拒绝；联合搜索候选在确认样本达到 62.5%–70.8%，相对同轮 41.7% 基线提升 20.8–29.1 个百分点。三次重复验证与 route/priority 切片门控只允许其中一个候选发布，避免仅凭 12 条验证样本均值上线。
+
 ## 复现
 
 先运行 Ollama 服务，再在项目根目录执行：
@@ -60,6 +62,13 @@ python evaluation/verify_evidence.py
 # 固定候选池、四次评估预算的 acquisition 消融
 python evaluation/benchmark_acquisition.py evaluation/results/my-structure-run `
   --output evaluation/results/my-acquisition/acquisition.json --budget 4
+
+# GEPA 风格安全合并，以及 MIPRO 风格 instruction × demos 联合搜索
+python examples/evolve_pareto_merge.py evaluation/results/my-acquisition/acquisition.json `
+  --output evaluation/results/my-pareto-run --frontier hybrid
+python examples/evolve_joint_instruction_demo.py evaluation/results/my-acquisition/acquisition.json `
+  --output evaluation/results/my-joint-run --budget 6
+python evaluation/audit_release_stability.py evaluation/results/my-joint-run
 ```
 
 使用新输出目录以保留历史证据。核心实验仅调用本地模型；目标 Python 版本为 3.11+。

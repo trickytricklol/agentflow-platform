@@ -102,3 +102,34 @@ def structural_release(parent, candidate, baseline, validation):
         return {'released':False, 'dsl':structural_dsl(parent), 'reason':'validation did not improve'}
     return {'released':True, 'dsl':structural_dsl(candidate), 'rollback':structural_dsl(parent),
             'reason':'strict validation improvement'}
+
+
+def risk_aware_release(parent,candidate,baseline_runs,candidate_runs):
+    """Require repeat-wise and business-slice non-regression before release."""
+    if len(baseline_runs)!=len(candidate_runs) or len(baseline_runs)<2:
+        raise ValueError('matched repeated validation runs are required')
+    regressions=[]
+    for index,(base,child) in enumerate(zip(baseline_runs,candidate_runs)):
+        if child['success'] < base['success']:
+            regressions.append('repeat:'+str(index))
+    def totals(runs):
+        values={}
+        for run in runs:
+            for row in run['rows']:
+                for field in ('route','priority'):
+                    group=field+':'+row['expected'][field]
+                    correct,count=values.get(group,(0,0)); values[group]=(correct+int(row['correct']),count+1)
+        return values
+    base_slices,child_slices=totals(baseline_runs),totals(candidate_runs)
+    for group,(correct,count) in base_slices.items():
+        child_correct,child_count=child_slices[group]
+        if child_correct/child_count < correct/count: regressions.append(group)
+    base_mean=sum(run['success'] for run in baseline_runs)/len(baseline_runs)
+    child_mean=sum(run['success'] for run in candidate_runs)/len(candidate_runs)
+    if child_mean <= base_mean: regressions.append('mean_not_strictly_better')
+    if regressions:
+        return {'released':False,'reason':'risk gate failed: '+','.join(regressions),'dsl':structural_dsl(parent),
+                'baseline_mean':base_mean,'candidate_mean':child_mean}
+    return {'released':True,'reason':'repeated validation and slice non-regression passed',
+            'dsl':structural_dsl(candidate),'rollback':structural_dsl(parent),
+            'baseline_mean':base_mean,'candidate_mean':child_mean}
