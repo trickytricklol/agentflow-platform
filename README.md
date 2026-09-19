@@ -36,7 +36,7 @@ flowchart LR
 
 早期十二条样本的手工 A/B 和 BFCL 全局词法检索是探索性实验，不能作为自进化算法收益证据。当前结论以[新实验报告](docs/evolution-results.md)为准。
 
-**当前结果：闭环可运行，收益尚不稳定。** 4B 变异器生成的 seed17 冻结版本在新增模拟工单上由固定指令的 37.5% 提升至 66.7%；seed29 只有 54.2%，低于同轮静态 few-shot 的 66.7%。GP/EI 尚未证明稳定优于随机搜索，完整报告保留全部对照与 Token 成本。
+**当前结果：闭环可运行，收益尚不稳定。** 早期一轮冻结版本在新增模拟工单上由固定指令的 37.5% 提升至 66.7%，另一种子低于静态 few-shot。后续审计修复了生成策略可能覆盖业务规则的问题；策略锁定后两个种子的测试基线均为 70.8%，搜索候选因验证未提升而被正确拒绝发布，但换一种表述的确认样本仅 41.7%。在两个固定候选池的 4 次预算实验里，“文本+拓扑”GP 均找到训练最优；随机命中概率分别为 78.8% 和 36.4%，但候选池数量仍不足以证明稳定泛化优势。
 
 ## 复现
 
@@ -56,6 +56,10 @@ python examples/evolve_structure.py --teacher-model qwen3:4b --seed 17 --output 
 python evaluation/analyze_structure.py evaluation/results/my-structure-run
 python evaluation/confirm_frozen.py evaluation/results/my-structure-run
 python evaluation/verify_evidence.py
+
+# 固定候选池、四次评估预算的 acquisition 消融
+python evaluation/benchmark_acquisition.py evaluation/results/my-structure-run `
+  --output evaluation/results/my-acquisition/acquisition.json --budget 4
 ```
 
 使用新输出目录以保留历史证据。核心实验仅调用本地模型；目标 Python 版本为 3.11+。

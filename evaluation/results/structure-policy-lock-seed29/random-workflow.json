@@ -1,0 +1,35 @@
+{
+  "released": false,
+  "dsl": {
+    "version": "1.0",
+    "nodes": [
+      {
+        "id": "start",
+        "type": "start"
+      },
+      {
+        "id": "classify",
+        "type": "llm",
+        "config": {
+          "role": "classify",
+          "prompt": "Apply the supplied business policy carefully. Return the requested JSON with the correct route and priority."
+        }
+      },
+      {
+        "id": "end",
+        "type": "end"
+      }
+    ],
+    "edges": [
+      {
+        "source": "start",
+        "target": "classify"
+      },
+      {
+        "source": "classify",
+        "target": "end"
+      }
+    ]
+  },
+  "reason": "validation did not improve"
+}

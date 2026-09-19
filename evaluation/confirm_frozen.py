@@ -1,5 +1,6 @@
 """Evaluate ALL frozen structural variants on fresh utterances; never select a winner."""
 import hashlib
+import copy
 import json
 import random
 import sys
@@ -31,13 +32,18 @@ def main():
     assert all(c['text'] not in seen for c in cases)
     report={'source_report_sha256':hashlib.sha256(original).hexdigest(),
             'confirmation_sha256':hashlib.sha256(confirmation_raw).hexdigest(),
-            'provenance':confirmation['provenance'], 'variants':variants, 'rows':{name:[] for name in variants}}
+            'provenance':confirmation['provenance'], 'variants':variants,
+            'deduplicated_identical_variants':True, 'rows':{name:[] for name in variants}}
     evaluator=StructuralEvaluator(OpenAICompatibleProvider('http://127.0.0.1:11434/v1','local-ollama',120),experiment['model'],data['policy'],RewardSpec())
     for i,case in enumerate(cases):
         names=list(variants)
         random.Random(experiment['seed']+i).shuffle(names)
+        cache={}
         for name in names:
-            report['rows'][name].extend(evaluator.evaluate(variants[name],[case],experiment['seed'])['rows'])
+            identity=json.dumps(variants[name],sort_keys=True,ensure_ascii=False)
+            if identity not in cache:
+                cache[identity]=evaluator.evaluate(variants[name],[case],experiment['seed'])['rows'][0]
+            report['rows'][name].append(copy.deepcopy(cache[identity]))
         target.write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
     lines=['# 冻结版本的新样本确认','','全部版本原样评估，不据此选版或调参。模拟同域工单，不是外部独立 benchmark。','',
            '| 方法 | 正确数 | 成功率 | 95% Wilson | Token |','|---|---:|---:|---:|---:|']
