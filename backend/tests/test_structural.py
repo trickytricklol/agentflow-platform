@@ -2,7 +2,7 @@ import pytest
 from agentflow.core import WorkflowGraph
 from agentflow.providers.base import ModelResponse
 from agentflow.optimization.evolution import RewardSpec
-from agentflow.optimization.structural import StructuralEvaluator, structural_dsl, structural_release, composite_genome_vector
+from agentflow.optimization.structural import StructuralEvaluator, structural_dsl, structural_release, risk_aware_release, composite_genome_vector
 
 
 class SequenceProvider:
@@ -67,3 +67,15 @@ def test_composite_vector_encodes_topology_and_stays_normalized():
     assert direct != review
     with pytest.raises(ValueError):
         composite_genome_vector({'topology':'unknown'},[1.0])
+
+
+def test_risk_gate_rejects_slice_regression_despite_mean_gain():
+    def run(security,other):
+        rows=[{'expected':{'route':'security','priority':'P1'},'correct':security},
+              {'expected':{'route':'other','priority':'P2'},'correct':other}]
+        return {'success':sum(row['correct'] for row in rows)/2,'rows':rows}
+    parent={'topology':'direct','prompt':'base'}; child={'topology':'review','prompt':'new'}
+    result=risk_aware_release(parent,child,[run(True,False),run(True,False)],[run(False,True),run(True,True)])
+    assert not result['released'] and 'route:security' in result['reason']
+    accepted=risk_aware_release(parent,child,[run(False,False),run(False,False)],[run(True,False),run(True,False)])
+    assert accepted['released'] and accepted['rollback']==structural_dsl(parent)

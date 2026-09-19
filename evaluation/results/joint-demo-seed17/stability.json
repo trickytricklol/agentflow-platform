@@ -1,0 +1,2692 @@
+{
+  "seeds": [
+    17,
+    29,
+    43
+  ],
+  "baseline": {
+    "topology": "direct",
+    "prompt": "Apply the supplied business policy carefully. Return the requested JSON with the correct route and priority."
+  },
+  "candidates": {
+    "random": {
+      "topology": "direct",
+      "prompt": "3. Analyze ticket text for explicit current events: 'currently unable', 'right now', 'active' → P0. If 'past', 'historical', 'resolved' → P2. If 'unauthorized access' → security. If 'payment', 'refund' → billing. If 'login', 'permission' → access. Else, other. Priority: P0 for all-users current outages; P1 for blocked individuals/groups or unresolved financial issues; P2 for questions/resolved incidents.\nReference training cases (apply policy to the NEW ticket; never copy an unrelated answer):\n[{\"ticket\": \"My export is blocked and I cannot finish my work.\", \"answer\": {\"route\": \"other\", \"priority\": \"P1\"}}, {\"ticket\": \"I was charged twice and need the extra payment returned.\", \"answer\": {\"route\": \"billing\", \"priority\": \"P1\"}}, {\"ticket\": \"I forgot my password and cannot sign in.\", \"answer\": {\"route\": \"access\", \"priority\": \"P1\"}}, {\"ticket\": \"All users are currently unable to authenticate.\", \"answer\": {\"route\": \"access\", \"priority\": \"P0\"}}]"
+    },
+    "gp_ei": {
+      "topology": "direct",
+      "prompt": "1. Check for 'all users' or 'every user' in current context. If yes, route=other (P0) if outage, route=access (P0) if auth failure. Else, check for 'unauthorized access' or 'stolen credentials' → route=security. Else, check for 'payment', 'refund', 'invoice' → route=billing. Else, route=other. Priority: P0 if all users affected currently; P1 if blocked individuals/groups or unresolved financial issues; P2 otherwise.\nReference training cases (apply policy to the NEW ticket; never copy an unrelated answer):\n[{\"ticket\": \"All users are currently unable to authenticate.\", \"answer\": {\"route\": \"access\", \"priority\": \"P0\"}}, {\"ticket\": \"A past unauthorized login was resolved; how do we avoid a repeat?\", \"answer\": {\"route\": \"security\", \"priority\": \"P2\"}}, {\"ticket\": \"My export is blocked and I cannot finish my work.\", \"answer\": {\"route\": \"other\", \"priority\": \"P1\"}}, {\"ticket\": \"Payment processing is down right now for every user.\", \"answer\": {\"route\": \"billing\", \"priority\": \"P0\"}}]"
+    }
+  },
+  "runs": {
+    "baseline": [
+      {
+        "success": 0.5833333333333334,
+        "valid_json": 1.0,
+        "tokens": 3099,
+        "reward": 0.5833333333333334,
+        "rows": [
+          {
+            "id": "v01",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 230.07170000000002,
+            "input_tokens": 237,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 237,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v02",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 218.86939999999998,
+            "input_tokens": 242,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 242,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v03",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 229.81659999999994,
+            "input_tokens": 237,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 237,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v04",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 225.3701,
+            "input_tokens": 236,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 236,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v05",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 219.64589999999995,
+            "input_tokens": 233,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 233,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v06",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 247.39010000000005,
+            "input_tokens": 238,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 238,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v07",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 216.89020000000014,
+            "input_tokens": 235,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 235,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v08",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 237.60770000000008,
+            "input_tokens": 238,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 238,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v09",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 230.1515999999999,
+            "input_tokens": 238,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 238,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v10",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"other\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 209.20329999999998,
+            "input_tokens": 232,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 232,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"other\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v11",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P1"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 229.943,
+            "input_tokens": 235,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 235,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v12",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 249.7729999999998,
+            "input_tokens": 234,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 234,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          }
+        ]
+      },
+      {
+        "success": 0.5833333333333334,
+        "valid_json": 1.0,
+        "tokens": 3099,
+        "reward": 0.5833333333333334,
+        "rows": [
+          {
+            "id": "v01",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 242.2979000000005,
+            "input_tokens": 237,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 237,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v02",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 222.98059999999964,
+            "input_tokens": 242,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 242,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v03",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 245.35389999999956,
+            "input_tokens": 237,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 237,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v04",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 243.70810000000097,
+            "input_tokens": 236,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 236,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v05",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 244.10879999999935,
+            "input_tokens": 233,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 233,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v06",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 221.01129999999893,
+            "input_tokens": 238,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 238,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v07",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 248.49709999999982,
+            "input_tokens": 235,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 235,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v08",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 213.9219000000008,
+            "input_tokens": 238,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 238,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v09",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 213.9779999999991,
+            "input_tokens": 238,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 238,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v10",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"other\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 231.54850000000062,
+            "input_tokens": 232,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 232,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"other\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v11",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P1"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 211.24549999999863,
+            "input_tokens": 235,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 235,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v12",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 215.41320000000042,
+            "input_tokens": 234,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 234,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          }
+        ]
+      },
+      {
+        "success": 0.5833333333333334,
+        "valid_json": 1.0,
+        "tokens": 3099,
+        "reward": 0.5833333333333334,
+        "rows": [
+          {
+            "id": "v01",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 203.63539999999958,
+            "input_tokens": 237,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 237,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v02",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 225.1373000000001,
+            "input_tokens": 242,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 242,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v03",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 236.03599999999858,
+            "input_tokens": 237,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 237,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v04",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 217.04690000000326,
+            "input_tokens": 236,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 236,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v05",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 214.29880000000168,
+            "input_tokens": 233,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 233,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v06",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 212.06390000000042,
+            "input_tokens": 238,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 238,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v07",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 224.9894000000019,
+            "input_tokens": 235,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 235,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v08",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 223.67979999999932,
+            "input_tokens": 238,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 238,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v09",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 216.9358999999993,
+            "input_tokens": 238,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 238,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v10",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"other\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 233.75569999999968,
+            "input_tokens": 232,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 232,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"other\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v11",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P1"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 208.19739999999953,
+            "input_tokens": 235,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 235,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v12",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 215.20149999999916,
+            "input_tokens": 234,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 234,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          }
+        ]
+      }
+    ],
+    "random": [
+      {
+        "success": 0.75,
+        "valid_json": 1.0,
+        "tokens": 5819,
+        "reward": 0.75,
+        "rows": [
+          {
+            "id": "v01",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 283.58660000000003,
+            "input_tokens": 464,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 464,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v02",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 235.00029999999984,
+            "input_tokens": 469,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 469,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v03",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P0"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 221.15130000000028,
+            "input_tokens": 464,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 464,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v04",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 220.68960000000004,
+            "input_tokens": 463,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 463,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v05",
+            "output": "<think>\n\n</think>\n\n{\"route\": \"billing\", \"priority\": \"P2\"}",
+            "expected": {
+              "route": "billing",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 196.47879999999995,
+            "input_tokens": 460,
+            "output_tokens": 18,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 460,
+                "output_tokens": 18,
+                "output": "<think>\n\n</think>\n\n{\"route\": \"billing\", \"priority\": \"P2\"}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v06",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 225.51210000000043,
+            "input_tokens": 465,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 465,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v07",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P0"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 214.5060999999995,
+            "input_tokens": 462,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 462,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v08",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 215.1280999999994,
+            "input_tokens": 465,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 465,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v09",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 211.29969999999963,
+            "input_tokens": 465,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 465,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v10",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"other\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 220.6647999999998,
+            "input_tokens": 459,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 459,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"other\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v11",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P1"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 250.24930000000012,
+            "input_tokens": 462,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 462,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v12",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 241.29929999999968,
+            "input_tokens": 461,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 461,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          }
+        ]
+      },
+      {
+        "success": 0.75,
+        "valid_json": 1.0,
+        "tokens": 5819,
+        "reward": 0.75,
+        "rows": [
+          {
+            "id": "v01",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 245.95029999999872,
+            "input_tokens": 464,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 464,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v02",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 224.65500000000026,
+            "input_tokens": 469,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 469,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v03",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P0"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 232.6433000000012,
+            "input_tokens": 464,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 464,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v04",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 242.0401999999999,
+            "input_tokens": 463,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 463,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v05",
+            "output": "<think>\n\n</think>\n\n{\"route\": \"billing\", \"priority\": \"P2\"}",
+            "expected": {
+              "route": "billing",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 204.49879999999965,
+            "input_tokens": 460,
+            "output_tokens": 18,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 460,
+                "output_tokens": 18,
+                "output": "<think>\n\n</think>\n\n{\"route\": \"billing\", \"priority\": \"P2\"}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v06",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 225.97760000000022,
+            "input_tokens": 465,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 465,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v07",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P0"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 236.56320000000085,
+            "input_tokens": 462,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 462,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v08",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 227.15939999999966,
+            "input_tokens": 465,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 465,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v09",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 253.90840000000026,
+            "input_tokens": 465,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 465,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v10",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"other\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 217.31120000000104,
+            "input_tokens": 459,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 459,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"other\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v11",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P1"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 255.10930000000087,
+            "input_tokens": 462,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 462,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v12",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 236.10259999999883,
+            "input_tokens": 461,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 461,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          }
+        ]
+      },
+      {
+        "success": 0.75,
+        "valid_json": 1.0,
+        "tokens": 5819,
+        "reward": 0.75,
+        "rows": [
+          {
+            "id": "v01",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 263.53079999999807,
+            "input_tokens": 464,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 464,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v02",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 224.76040000000097,
+            "input_tokens": 469,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 469,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v03",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P0"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 260.97090000000026,
+            "input_tokens": 464,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 464,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v04",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 217.0798999999981,
+            "input_tokens": 463,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 463,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v05",
+            "output": "<think>\n\n</think>\n\n{\"route\": \"billing\", \"priority\": \"P2\"}",
+            "expected": {
+              "route": "billing",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 211.3952999999995,
+            "input_tokens": 460,
+            "output_tokens": 18,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 460,
+                "output_tokens": 18,
+                "output": "<think>\n\n</think>\n\n{\"route\": \"billing\", \"priority\": \"P2\"}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v06",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 239.7309000000014,
+            "input_tokens": 465,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 465,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v07",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P0"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 229.41430000000196,
+            "input_tokens": 462,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 462,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v08",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 245.6288000000022,
+            "input_tokens": 465,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 465,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v09",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 244.68109999999754,
+            "input_tokens": 465,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 465,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v10",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"other\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 230.5230000000016,
+            "input_tokens": 459,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 459,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"other\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v11",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P1"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 211.35770000000065,
+            "input_tokens": 462,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 462,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v12",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 248.0942000000006,
+            "input_tokens": 461,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 461,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          }
+        ]
+      }
+    ],
+    "gp_ei": [
+      {
+        "success": 0.6666666666666666,
+        "valid_json": 1.0,
+        "tokens": 5931,
+        "reward": 0.6666666666666666,
+        "rows": [
+          {
+            "id": "v01",
+            "output": "<think>\n\n</think>\n\n{\"route\": \"access\", \"priority\": \"P1\"}",
+            "expected": {
+              "route": "access",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 208.67989999999992,
+            "input_tokens": 474,
+            "output_tokens": 18,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 474,
+                "output_tokens": 18,
+                "output": "<think>\n\n</think>\n\n{\"route\": \"access\", \"priority\": \"P1\"}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v02",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P2"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 219.42859999999965,
+            "input_tokens": 479,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 479,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v03",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P0"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 256.48170000000016,
+            "input_tokens": 474,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 474,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v04",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 240.64649999999955,
+            "input_tokens": 473,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 473,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v05",
+            "output": "<think>\n\n</think>\n\n{\"route\": \"billing\", \"priority\": \"P2\"}",
+            "expected": {
+              "route": "billing",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 223.21799999999925,
+            "input_tokens": 470,
+            "output_tokens": 18,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 470,
+                "output_tokens": 18,
+                "output": "<think>\n\n</think>\n\n{\"route\": \"billing\", \"priority\": \"P2\"}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v06",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 238.40830000000057,
+            "input_tokens": 475,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 475,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v07",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P0"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 232.0549999999999,
+            "input_tokens": 472,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 472,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v08",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 233.9424000000001,
+            "input_tokens": 475,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 475,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v09",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 222.96270000000007,
+            "input_tokens": 475,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 475,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v10",
+            "output": "<think>\n\n</think>\n\n{\"route\": \"other\", \"priority\": \"P2\"}",
+            "expected": {
+              "route": "other",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 180.55999999999983,
+            "input_tokens": 469,
+            "output_tokens": 18,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 469,
+                "output_tokens": 18,
+                "output": "<think>\n\n</think>\n\n{\"route\": \"other\", \"priority\": \"P2\"}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v11",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P1"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 253.56009999999964,
+            "input_tokens": 472,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 472,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v12",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 235.8664000000008,
+            "input_tokens": 471,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 471,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          }
+        ]
+      },
+      {
+        "success": 0.6666666666666666,
+        "valid_json": 1.0,
+        "tokens": 5931,
+        "reward": 0.6666666666666666,
+        "rows": [
+          {
+            "id": "v01",
+            "output": "<think>\n\n</think>\n\n{\"route\": \"access\", \"priority\": \"P1\"}",
+            "expected": {
+              "route": "access",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 234.48020000000014,
+            "input_tokens": 474,
+            "output_tokens": 18,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 474,
+                "output_tokens": 18,
+                "output": "<think>\n\n</think>\n\n{\"route\": \"access\", \"priority\": \"P1\"}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v02",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P2"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 231.30589999999884,
+            "input_tokens": 479,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 479,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v03",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P0"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 215.38229999999993,
+            "input_tokens": 474,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 474,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v04",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 213.34660000000127,
+            "input_tokens": 473,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 473,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v05",
+            "output": "<think>\n\n</think>\n\n{\"route\": \"billing\", \"priority\": \"P2\"}",
+            "expected": {
+              "route": "billing",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 187.8491000000011,
+            "input_tokens": 470,
+            "output_tokens": 18,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 470,
+                "output_tokens": 18,
+                "output": "<think>\n\n</think>\n\n{\"route\": \"billing\", \"priority\": \"P2\"}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v06",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 231.99029999999965,
+            "input_tokens": 475,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 475,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v07",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P0"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 228.819399999999,
+            "input_tokens": 472,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 472,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v08",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 244.7461000000004,
+            "input_tokens": 475,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 475,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v09",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 217.57649999999984,
+            "input_tokens": 475,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 475,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v10",
+            "output": "<think>\n\n</think>\n\n{\"route\": \"other\", \"priority\": \"P2\"}",
+            "expected": {
+              "route": "other",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 197.09399999999812,
+            "input_tokens": 469,
+            "output_tokens": 18,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 469,
+                "output_tokens": 18,
+                "output": "<think>\n\n</think>\n\n{\"route\": \"other\", \"priority\": \"P2\"}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v11",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P1"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 227.7181000000006,
+            "input_tokens": 472,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 472,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v12",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 250.90780000000024,
+            "input_tokens": 471,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 471,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          }
+        ]
+      },
+      {
+        "success": 0.6666666666666666,
+        "valid_json": 1.0,
+        "tokens": 5931,
+        "reward": 0.6666666666666666,
+        "rows": [
+          {
+            "id": "v01",
+            "output": "<think>\n\n</think>\n\n{\"route\": \"access\", \"priority\": \"P1\"}",
+            "expected": {
+              "route": "access",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 209.47530000000114,
+            "input_tokens": 474,
+            "output_tokens": 18,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 474,
+                "output_tokens": 18,
+                "output": "<think>\n\n</think>\n\n{\"route\": \"access\", \"priority\": \"P1\"}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v02",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P2"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 225.38959999999975,
+            "input_tokens": 479,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 479,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v03",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "access",
+              "priority": "P0"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 239.26910000000134,
+            "input_tokens": 474,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 474,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v04",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 229.62010000000177,
+            "input_tokens": 473,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 473,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"billing\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v05",
+            "output": "<think>\n\n</think>\n\n{\"route\": \"billing\", \"priority\": \"P2\"}",
+            "expected": {
+              "route": "billing",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 206.28409999999775,
+            "input_tokens": 470,
+            "output_tokens": 18,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 470,
+                "output_tokens": 18,
+                "output": "<think>\n\n</think>\n\n{\"route\": \"billing\", \"priority\": \"P2\"}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v06",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "billing",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 262.23629999999787,
+            "input_tokens": 475,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 475,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v07",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P0"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 228.21349999999896,
+            "input_tokens": 472,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 472,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v08",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P2\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 246.01080000000053,
+            "input_tokens": 475,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 475,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P2\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v09",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "security",
+              "priority": "P1"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 227.89969999999826,
+            "input_tokens": 475,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 475,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"security\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v10",
+            "output": "<think>\n\n</think>\n\n{\"route\": \"other\", \"priority\": \"P2\"}",
+            "expected": {
+              "route": "other",
+              "priority": "P2"
+            },
+            "correct": true,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 221.24510000000086,
+            "input_tokens": 469,
+            "output_tokens": 18,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 469,
+                "output_tokens": 18,
+                "output": "<think>\n\n</think>\n\n{\"route\": \"other\", \"priority\": \"P2\"}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v11",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P1"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 223.32369999999813,
+            "input_tokens": 472,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 472,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P1\"\n}"
+              }
+            ],
+            "errors": []
+          },
+          {
+            "id": "v12",
+            "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}",
+            "expected": {
+              "route": "other",
+              "priority": "P0"
+            },
+            "correct": false,
+            "valid_json": true,
+            "status": "SUCCESS",
+            "latency_ms": 217.1170999999994,
+            "input_tokens": 471,
+            "output_tokens": 22,
+            "trace": [
+              {
+                "node": "classify",
+                "input_tokens": 471,
+                "output_tokens": 22,
+                "output": "<think>\n\n</think>\n\n{\n  \"route\": \"access\",\n  \"priority\": \"P0\"\n}"
+              }
+            ],
+            "errors": []
+          }
+        ]
+      }
+    ]
+  },
+  "decisions": {
+    "random": {
+      "released": true,
+      "reason": "repeated validation and slice non-regression passed",
+      "dsl": {
+        "version": "1.0",
+        "nodes": [
+          {
+            "id": "start",
+            "type": "start"
+          },
+          {
+            "id": "classify",
+            "type": "llm",
+            "config": {
+              "role": "classify",
+              "prompt": "3. Analyze ticket text for explicit current events: 'currently unable', 'right now', 'active' → P0. If 'past', 'historical', 'resolved' → P2. If 'unauthorized access' → security. If 'payment', 'refund' → billing. If 'login', 'permission' → access. Else, other. Priority: P0 for all-users current outages; P1 for blocked individuals/groups or unresolved financial issues; P2 for questions/resolved incidents.\nReference training cases (apply policy to the NEW ticket; never copy an unrelated answer):\n[{\"ticket\": \"My export is blocked and I cannot finish my work.\", \"answer\": {\"route\": \"other\", \"priority\": \"P1\"}}, {\"ticket\": \"I was charged twice and need the extra payment returned.\", \"answer\": {\"route\": \"billing\", \"priority\": \"P1\"}}, {\"ticket\": \"I forgot my password and cannot sign in.\", \"answer\": {\"route\": \"access\", \"priority\": \"P1\"}}, {\"ticket\": \"All users are currently unable to authenticate.\", \"answer\": {\"route\": \"access\", \"priority\": \"P0\"}}]"
+            }
+          },
+          {
+            "id": "end",
+            "type": "end"
+          }
+        ],
+        "edges": [
+          {
+            "source": "start",
+            "target": "classify"
+          },
+          {
+            "source": "classify",
+            "target": "end"
+          }
+        ]
+      },
+      "rollback": {
+        "version": "1.0",
+        "nodes": [
+          {
+            "id": "start",
+            "type": "start"
+          },
+          {
+            "id": "classify",
+            "type": "llm",
+            "config": {
+              "role": "classify",
+              "prompt": "Apply the supplied business policy carefully. Return the requested JSON with the correct route and priority."
+            }
+          },
+          {
+            "id": "end",
+            "type": "end"
+          }
+        ],
+        "edges": [
+          {
+            "source": "start",
+            "target": "classify"
+          },
+          {
+            "source": "classify",
+            "target": "end"
+          }
+        ]
+      },
+      "baseline_mean": 0.5833333333333334,
+      "candidate_mean": 0.75
+    },
+    "gp_ei": {
+      "released": false,
+      "reason": "risk gate failed: priority:P2",
+      "dsl": {
+        "version": "1.0",
+        "nodes": [
+          {
+            "id": "start",
+            "type": "start"
+          },
+          {
+            "id": "classify",
+            "type": "llm",
+            "config": {
+              "role": "classify",
+              "prompt": "Apply the supplied business policy carefully. Return the requested JSON with the correct route and priority."
+            }
+          },
+          {
+            "id": "end",
+            "type": "end"
+          }
+        ],
+        "edges": [
+          {
+            "source": "start",
+            "target": "classify"
+          },
+          {
+            "source": "classify",
+            "target": "end"
+          }
+        ]
+      },
+      "baseline_mean": 0.5833333333333334,
+      "candidate_mean": 0.6666666666666666
+    }
+  }
+}
