@@ -240,9 +240,10 @@ def verify_bfcl(folder):
     report_path=folder/'report.json'; report=json.loads(report_path.read_text(encoding='utf-8')); signature=report['signature']
     assert signature['data_sha256']==hashlib.sha256(data_path.read_bytes()).hexdigest()
     assert signature['answers_sha256']==hashlib.sha256(answers_path.read_bytes()).hexdigest()
-    assert signature['development_ids']==[case['id'] for case in cases[:20]]
-    assert signature['validation_ids']==[case['id'] for case in cases[20:60]]
-    assert signature['sealed_confirmation_ids']==[case['id'] for case in cases[60:120]]
+    start=signature.get('development_offset',0)
+    assert signature['development_ids']==[case['id'] for case in cases[start:start+20]]
+    assert signature['validation_ids']==[case['id'] for case in cases[start+20:start+60]]
+    assert signature['sealed_confirmation_ids']==[case['id'] for case in cases[start+60:start+120]]
     def check_rows(rows,ids):
         assert set(rows)==set(ids)
         for case_id,row in rows.items():
@@ -269,19 +270,24 @@ def verify_bfcl(folder):
         assert set(trajectory['steps'])<=set(candidates)
         assert trajectory['winner'] in [baseline_id]+trajectory['steps']
         assert trajectory['best_development']==max(scores[pid] for pid in [baseline_id]+trajectory['steps'])
-    confirmation_path=folder/'confirmation.json'; confirmation=json.loads(confirmation_path.read_text(encoding='utf-8'))
-    assert confirmation['signature']['source_report_sha256']==hashlib.sha256(report_path.read_bytes()).hexdigest()
-    assert confirmation['signature']['ids']==signature['sealed_confirmation_ids']
-    for name,rows in confirmation['rows'].items():
-        check_rows(rows,signature['sealed_confirmation_ids']); check_summary(rows,confirmation['summary'][name])
-    base,child=confirmation['rows']['baseline'],confirmation['rows']['reflection_gp']
-    improved=sum(not base[key]['correct'] and child[key]['correct'] for key in base)
-    regressed=sum(base[key]['correct'] and not child[key]['correct'] for key in base)
-    assert confirmation['paired']['improved']==improved and confirmation['paired']['regressed']==regressed
     release=json.loads((folder/'release.json').read_text(encoding='utf-8'))
     assert release['experiment_sha256']==hashlib.sha256(report_path.read_bytes()).hexdigest()
-    assert release['confirmation_sha256']==hashlib.sha256(confirmation_path.read_bytes()).hexdigest()
-    assert release['released']==(confirmation['summary']['reflection_gp']['accuracy']>confirmation['summary']['baseline']['accuracy'] and regressed<=improved)
+    confirmation_path=folder/'confirmation.json'
+    if confirmation_path.exists():
+        confirmation=json.loads(confirmation_path.read_text(encoding='utf-8'))
+        assert confirmation['signature']['source_report_sha256']==hashlib.sha256(report_path.read_bytes()).hexdigest()
+        assert confirmation['signature']['ids']==signature['sealed_confirmation_ids']
+        for name,rows in confirmation['rows'].items():
+            check_rows(rows,signature['sealed_confirmation_ids']); check_summary(rows,confirmation['summary'][name])
+        base,child=confirmation['rows']['baseline'],confirmation['rows']['reflection_gp']
+        improved=sum(not base[key]['correct'] and child[key]['correct'] for key in base)
+        regressed=sum(base[key]['correct'] and not child[key]['correct'] for key in base)
+        assert confirmation['paired']['improved']==improved and confirmation['paired']['regressed']==regressed
+        assert release['confirmation_sha256']==hashlib.sha256(confirmation_path.read_bytes()).hexdigest()
+        assert release['released']==(confirmation['summary']['reflection_gp']['accuracy']>confirmation['summary']['baseline']['accuracy'] and regressed<=improved)
+    else:
+        baseline=result['baseline']['validation']['accuracy']; child=result['trajectories']['reflection_gp']['validation']['accuracy']
+        assert not release['released'] and child<=baseline and release['confirmation_status']=='SEALED_NOT_RUN'
     return 'PASS'
 
 
@@ -296,5 +302,6 @@ if __name__ == '__main__':
         print(path.parent.name+': '+verify_acquisition(path))
     for path in sorted((ROOT/'evaluation'/'results').glob('*/benchmark.json')):
         print(path.parent.name+': '+verify_safeflow(path))
-    for path in sorted((ROOT/'evaluation'/'results').glob('bfcl-prompt-evolution-*/report.json')):
-        print(path.parent.name+': '+verify_bfcl(path.parent))
+    for path in sorted((ROOT/'evaluation'/'results').glob('bfcl-*/report.json')):
+        if (path.parent/'release.json').exists() and 'development_ids' in json.loads(path.read_text(encoding='utf-8')).get('signature',{}):
+            print(path.parent.name+': '+verify_bfcl(path.parent))

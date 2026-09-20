@@ -1,0 +1,223 @@
+{
+  "signature": {
+    "data_sha256": "6cb4c932a8db34e27cc88b30d95522a57439b998054a843755cdc48ce07e49d7",
+    "answers_sha256": "7381929c55bb6c9d0a9476bf3c92d24969994ffb3ffb58b0207f917e9510326d",
+    "development_ids": [
+      "simple_python_120",
+      "simple_python_121",
+      "simple_python_122",
+      "simple_python_123",
+      "simple_python_124",
+      "simple_python_125",
+      "simple_python_126",
+      "simple_python_127",
+      "simple_python_128",
+      "simple_python_129",
+      "simple_python_130",
+      "simple_python_131",
+      "simple_python_132",
+      "simple_python_133",
+      "simple_python_134",
+      "simple_python_135",
+      "simple_python_136",
+      "simple_python_137",
+      "simple_python_138",
+      "simple_python_139"
+    ],
+    "validation_ids": [
+      "simple_python_140",
+      "simple_python_141",
+      "simple_python_142",
+      "simple_python_143",
+      "simple_python_144",
+      "simple_python_145",
+      "simple_python_146",
+      "simple_python_147",
+      "simple_python_148",
+      "simple_python_149",
+      "simple_python_150",
+      "simple_python_151",
+      "simple_python_152",
+      "simple_python_153",
+      "simple_python_154",
+      "simple_python_155",
+      "simple_python_156",
+      "simple_python_157",
+      "simple_python_158",
+      "simple_python_159",
+      "simple_python_160",
+      "simple_python_161",
+      "simple_python_162",
+      "simple_python_163",
+      "simple_python_164",
+      "simple_python_165",
+      "simple_python_166",
+      "simple_python_167",
+      "simple_python_168",
+      "simple_python_169",
+      "simple_python_170",
+      "simple_python_171",
+      "simple_python_172",
+      "simple_python_173",
+      "simple_python_174",
+      "simple_python_175",
+      "simple_python_176",
+      "simple_python_177",
+      "simple_python_178",
+      "simple_python_179"
+    ],
+    "sealed_confirmation_ids": [
+      "simple_python_180",
+      "simple_python_181",
+      "simple_python_182",
+      "simple_python_183",
+      "simple_python_184",
+      "simple_python_185",
+      "simple_python_186",
+      "simple_python_187",
+      "simple_python_188",
+      "simple_python_189",
+      "simple_python_190",
+      "simple_python_191",
+      "simple_python_192",
+      "simple_python_193",
+      "simple_python_194",
+      "simple_python_195",
+      "simple_python_196",
+      "simple_python_197",
+      "simple_python_198",
+      "simple_python_199",
+      "simple_python_200",
+      "simple_python_201",
+      "simple_python_202",
+      "simple_python_203",
+      "simple_python_204",
+      "simple_python_205",
+      "simple_python_206",
+      "simple_python_207",
+      "simple_python_208",
+      "simple_python_209",
+      "simple_python_210",
+      "simple_python_211",
+      "simple_python_212",
+      "simple_python_213",
+      "simple_python_214",
+      "simple_python_215",
+      "simple_python_216",
+      "simple_python_217",
+      "simple_python_218",
+      "simple_python_219",
+      "simple_python_220",
+      "simple_python_221",
+      "simple_python_222",
+      "simple_python_223",
+      "simple_python_224",
+      "simple_python_225",
+      "simple_python_226",
+      "simple_python_227",
+      "simple_python_228",
+      "simple_python_229",
+      "simple_python_230",
+      "simple_python_231",
+      "simple_python_232",
+      "simple_python_233",
+      "simple_python_234",
+      "simple_python_235",
+      "simple_python_236",
+      "simple_python_237",
+      "simple_python_238",
+      "simple_python_239"
+    ],
+    "task_model": "qwen3:1.7b",
+    "mutation_model": "qwen3:4b",
+    "seed": 29,
+    "budget": 4,
+    "protocol": "BFCL-derived native tool-call score; full candidate table for audit; confirmation sealed; not official BFCL",
+    "development_offset": 120,
+    "task_transport": "ollama-native-think-false"
+  },
+  "prompts": {
+    "60e0f19d4083": "Use the supplied function to satisfy the user. Ground every argument in the request and function schema; omit optional arguments unless explicitly requested."
+  },
+  "evaluations": {
+    "60e0f19d4083": {
+      "development": {
+        "simple_python_120": {
+          "id": "simple_python_120",
+          "correct": true,
+          "call": {
+            "name": "run_two_sample_ttest",
+            "arguments": {
+              "equal_variance": true,
+              "group1": [
+                3,
+                4,
+                5,
+                6,
+                4
+              ],
+              "group2": [
+                7,
+                8,
+                9,
+                8,
+                7
+              ]
+            }
+          },
+          "input_tokens": 281,
+          "output_tokens": 243,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:03:35.4027581Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "run_two_sample_ttest",
+                    "arguments": {
+                      "equal_variance": true,
+                      "group1": [
+                        3,
+                        4,
+                        5,
+                        6,
+                        4
+                      ],
+                      "group2": [
+                        7,
+                        8,
+                        9,
+                        8,
+                        7
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 40486665600,
+            "load_duration": 52166000,
+            "prompt_eval_count": 281,
+            "prompt_eval_duration": 661630200,
+            "eval_count": 243,
+            "eval_duration": 39749372700
+          }
+        },
+        "simple_python_121": {
+          "id": "simple_python_121",
+          "correct": false,
+          "call": null,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "raw": {},
+          "error": "timeout: timed out"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,1065 @@
+{
+  "signature": {
+    "data_sha256": "6cb4c932a8db34e27cc88b30d95522a57439b998054a843755cdc48ce07e49d7",
+    "answers_sha256": "7381929c55bb6c9d0a9476bf3c92d24969994ffb3ffb58b0207f917e9510326d",
+    "development_ids": [
+      "simple_python_120",
+      "simple_python_121",
+      "simple_python_122",
+      "simple_python_123",
+      "simple_python_124",
+      "simple_python_125",
+      "simple_python_126",
+      "simple_python_127",
+      "simple_python_128",
+      "simple_python_129",
+      "simple_python_130",
+      "simple_python_131",
+      "simple_python_132",
+      "simple_python_133",
+      "simple_python_134",
+      "simple_python_135",
+      "simple_python_136",
+      "simple_python_137",
+      "simple_python_138",
+      "simple_python_139"
+    ],
+    "validation_ids": [
+      "simple_python_140",
+      "simple_python_141",
+      "simple_python_142",
+      "simple_python_143",
+      "simple_python_144",
+      "simple_python_145",
+      "simple_python_146",
+      "simple_python_147",
+      "simple_python_148",
+      "simple_python_149",
+      "simple_python_150",
+      "simple_python_151",
+      "simple_python_152",
+      "simple_python_153",
+      "simple_python_154",
+      "simple_python_155",
+      "simple_python_156",
+      "simple_python_157",
+      "simple_python_158",
+      "simple_python_159",
+      "simple_python_160",
+      "simple_python_161",
+      "simple_python_162",
+      "simple_python_163",
+      "simple_python_164",
+      "simple_python_165",
+      "simple_python_166",
+      "simple_python_167",
+      "simple_python_168",
+      "simple_python_169",
+      "simple_python_170",
+      "simple_python_171",
+      "simple_python_172",
+      "simple_python_173",
+      "simple_python_174",
+      "simple_python_175",
+      "simple_python_176",
+      "simple_python_177",
+      "simple_python_178",
+      "simple_python_179"
+    ],
+    "sealed_confirmation_ids": [
+      "simple_python_180",
+      "simple_python_181",
+      "simple_python_182",
+      "simple_python_183",
+      "simple_python_184",
+      "simple_python_185",
+      "simple_python_186",
+      "simple_python_187",
+      "simple_python_188",
+      "simple_python_189",
+      "simple_python_190",
+      "simple_python_191",
+      "simple_python_192",
+      "simple_python_193",
+      "simple_python_194",
+      "simple_python_195",
+      "simple_python_196",
+      "simple_python_197",
+      "simple_python_198",
+      "simple_python_199",
+      "simple_python_200",
+      "simple_python_201",
+      "simple_python_202",
+      "simple_python_203",
+      "simple_python_204",
+      "simple_python_205",
+      "simple_python_206",
+      "simple_python_207",
+      "simple_python_208",
+      "simple_python_209",
+      "simple_python_210",
+      "simple_python_211",
+      "simple_python_212",
+      "simple_python_213",
+      "simple_python_214",
+      "simple_python_215",
+      "simple_python_216",
+      "simple_python_217",
+      "simple_python_218",
+      "simple_python_219",
+      "simple_python_220",
+      "simple_python_221",
+      "simple_python_222",
+      "simple_python_223",
+      "simple_python_224",
+      "simple_python_225",
+      "simple_python_226",
+      "simple_python_227",
+      "simple_python_228",
+      "simple_python_229",
+      "simple_python_230",
+      "simple_python_231",
+      "simple_python_232",
+      "simple_python_233",
+      "simple_python_234",
+      "simple_python_235",
+      "simple_python_236",
+      "simple_python_237",
+      "simple_python_238",
+      "simple_python_239"
+    ],
+    "task_model": "qwen3:1.7b",
+    "mutation_model": "qwen3:4b",
+    "seed": 29,
+    "budget": 4,
+    "protocol": "BFCL-derived native tool-call score; full candidate table for audit; confirmation sealed; not official BFCL",
+    "development_offset": 120,
+    "task_transport": "ollama-native-no-think-command"
+  },
+  "prompts": {
+    "60e0f19d4083": "Use the supplied function to satisfy the user. Ground every argument in the request and function schema; omit optional arguments unless explicitly requested."
+  },
+  "evaluations": {
+    "60e0f19d4083": {
+      "development": {
+        "simple_python_120": {
+          "id": "simple_python_120",
+          "correct": true,
+          "call": {
+            "name": "run_two_sample_ttest",
+            "arguments": {
+              "equal_variance": true,
+              "group1": [
+                3,
+                4,
+                5,
+                6,
+                4
+              ],
+              "group2": [
+                7,
+                8,
+                9,
+                8,
+                7
+              ]
+            }
+          },
+          "input_tokens": 285,
+          "output_tokens": 65,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:08:33.0779249Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "run_two_sample_ttest",
+                    "arguments": {
+                      "equal_variance": true,
+                      "group1": [
+                        3,
+                        4,
+                        5,
+                        6,
+                        4
+                      ],
+                      "group2": [
+                        7,
+                        8,
+                        9,
+                        8,
+                        7
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 74654213800,
+            "load_duration": 32920200,
+            "prompt_eval_count": 285,
+            "prompt_eval_duration": 537385700,
+            "eval_count": 65,
+            "eval_duration": 74078445200
+          }
+        },
+        "simple_python_121": {
+          "id": "simple_python_121",
+          "correct": false,
+          "call": null,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "raw": {},
+          "error": "timeout: timed out"
+        },
+        "simple_python_122": {
+          "id": "simple_python_122",
+          "correct": true,
+          "call": {
+            "name": "chi_squared_test",
+            "arguments": {
+              "alpha": 0.05,
+              "table": [
+                [
+                  10,
+                  20
+                ],
+                [
+                  30,
+                  40
+                ]
+              ]
+            }
+          },
+          "input_tokens": 264,
+          "output_tokens": 47,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:12:01.3211192Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "chi_squared_test",
+                    "arguments": {
+                      "alpha": 0.05,
+                      "table": [
+                        [
+                          10,
+                          20
+                        ],
+                        [
+                          30,
+                          40
+                        ]
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 88214503000,
+            "load_duration": 39381200,
+            "prompt_eval_count": 264,
+            "prompt_eval_duration": 33222790800,
+            "eval_count": 47,
+            "eval_duration": 54946435400
+          }
+        },
+        "simple_python_123": {
+          "id": "simple_python_123",
+          "correct": true,
+          "call": {
+            "name": "hypothesis_testing.two_sample_t_test",
+            "arguments": {
+              "alpha": 0.05,
+              "group1": [
+                12.4,
+                15.6,
+                11.2,
+                18.9
+              ],
+              "group2": [
+                10.5,
+                9.8,
+                15.2,
+                13.8
+              ]
+            }
+          },
+          "input_tokens": 342,
+          "output_tokens": 88,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:12:09.4288089Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "hypothesis_testing.two_sample_t_test",
+                    "arguments": {
+                      "alpha": 0.05,
+                      "group1": [
+                        12.4,
+                        15.6,
+                        11.2,
+                        18.9
+                      ],
+                      "group2": [
+                        10.5,
+                        9.8,
+                        15.2,
+                        13.8
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 8101224300,
+            "load_duration": 36488500,
+            "prompt_eval_count": 342,
+            "prompt_eval_duration": 62410400,
+            "eval_count": 88,
+            "eval_duration": 7994841300
+          }
+        },
+        "simple_python_124": {
+          "id": "simple_python_124",
+          "correct": true,
+          "call": {
+            "name": "t_test",
+            "arguments": {
+              "dataset_A": [
+                12,
+                24,
+                36
+              ],
+              "dataset_B": [
+                15,
+                30,
+                45
+              ]
+            }
+          },
+          "input_tokens": 283,
+          "output_tokens": 51,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:12:12.7018019Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "t_test",
+                    "arguments": {
+                      "dataset_A": [
+                        12,
+                        24,
+                        36
+                      ],
+                      "dataset_B": [
+                        15,
+                        30,
+                        45
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 3264926500,
+            "load_duration": 47999800,
+            "prompt_eval_count": 283,
+            "prompt_eval_duration": 424348000,
+            "eval_count": 51,
+            "eval_duration": 2781146000
+          }
+        },
+        "simple_python_125": {
+          "id": "simple_python_125",
+          "correct": true,
+          "call": {
+            "name": "predict_house_price",
+            "arguments": {
+              "area": 2500,
+              "location": "San Francisco",
+              "rooms": 5,
+              "year": 1990
+            }
+          },
+          "input_tokens": 275,
+          "output_tokens": 50,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:12:13.2561626Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "predict_house_price",
+                    "arguments": {
+                      "area": 2500,
+                      "location": "San Francisco",
+                      "rooms": 5,
+                      "year": 1990
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 547524200,
+            "load_duration": 33374100,
+            "prompt_eval_count": 275,
+            "prompt_eval_duration": 41553300,
+            "eval_count": 50,
+            "eval_duration": 467046200
+          }
+        },
+        "simple_python_126": {
+          "id": "simple_python_126",
+          "correct": true,
+          "call": {
+            "name": "linear_regression.get_r_squared",
+            "arguments": {
+              "dataset_path": "C:/data/cars.csv",
+              "dependent_variable": "car_price",
+              "independent_variables": [
+                "engine_size",
+                "fuel_economy"
+              ]
+            }
+          },
+          "input_tokens": 273,
+          "output_tokens": 56,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:12:13.8272318Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "linear_regression.get_r_squared",
+                    "arguments": {
+                      "dataset_path": "C:/data/cars.csv",
+                      "dependent_variable": "car_price",
+                      "independent_variables": [
+                        "engine_size",
+                        "fuel_economy"
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 564455000,
+            "load_duration": 31440500,
+            "prompt_eval_count": 273,
+            "prompt_eval_duration": 31147600,
+            "eval_count": 56,
+            "eval_duration": 494417300
+          }
+        },
+        "simple_python_127": {
+          "id": "simple_python_127",
+          "correct": true,
+          "call": {
+            "name": "calculate_NPV",
+            "arguments": {
+              "cash_flows": [
+                200,
+                300,
+                400,
+                500
+              ],
+              "discount_rate": 0.1,
+              "initial_investment": 2000
+            }
+          },
+          "input_tokens": 301,
+          "output_tokens": 65,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:12:14.4618492Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "calculate_NPV",
+                    "arguments": {
+                      "cash_flows": [
+                        200,
+                        300,
+                        400,
+                        500
+                      ],
+                      "discount_rate": 0.1,
+                      "initial_investment": 2000
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 629226900,
+            "load_duration": 29064100,
+            "prompt_eval_count": 301,
+            "prompt_eval_duration": 30281800,
+            "eval_count": 65,
+            "eval_duration": 563276200
+          }
+        },
+        "simple_python_128": {
+          "id": "simple_python_128",
+          "correct": true,
+          "call": {
+            "name": "finance.calculate_quarterly_dividend_per_share",
+            "arguments": {
+              "outstanding_shares": 100000000,
+              "total_payout": 50000000
+            }
+          },
+          "input_tokens": 247,
+          "output_tokens": 57,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:12:15.016759Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "finance.calculate_quarterly_dividend_per_share",
+                    "arguments": {
+                      "outstanding_shares": 100000000,
+                      "total_payout": 50000000
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 550542100,
+            "load_duration": 26287700,
+            "prompt_eval_count": 247,
+            "prompt_eval_duration": 31329800,
+            "eval_count": 57,
+            "eval_duration": 487944600
+          }
+        },
+        "simple_python_129": {
+          "id": "simple_python_129",
+          "correct": true,
+          "call": {
+            "name": "calculate_discounted_cash_flow",
+            "arguments": {
+              "coupon_payment": 100,
+              "discount_rate": 0.04,
+              "period": 5
+            }
+          },
+          "input_tokens": 287,
+          "output_tokens": 46,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:12:15.5057153Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "calculate_discounted_cash_flow",
+                    "arguments": {
+                      "coupon_payment": 100,
+                      "discount_rate": 0.04,
+                      "period": 5
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 482194400,
+            "load_duration": 28981200,
+            "prompt_eval_count": 287,
+            "prompt_eval_duration": 32606800,
+            "eval_count": 46,
+            "eval_duration": 414505200
+          }
+        },
+        "simple_python_130": {
+          "id": "simple_python_130",
+          "correct": true,
+          "call": {
+            "name": "finance_calculator.npv",
+            "arguments": {
+              "cash_flows": [
+                -50000,
+                10000,
+                15000,
+                20000,
+                25000,
+                30000
+              ],
+              "discount_rate": 0.08
+            }
+          },
+          "input_tokens": 321,
+          "output_tokens": 78,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:12:16.4024757Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "finance_calculator.npv",
+                    "arguments": {
+                      "cash_flows": [
+                        -50000,
+                        10000,
+                        15000,
+                        20000,
+                        25000,
+                        30000
+                      ],
+                      "discount_rate": 0.08
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 891736600,
+            "load_duration": 27967200,
+            "prompt_eval_count": 321,
+            "prompt_eval_duration": 34120600,
+            "eval_count": 78,
+            "eval_duration": 824259300
+          }
+        },
+        "simple_python_131": {
+          "id": "simple_python_131",
+          "correct": true,
+          "call": {
+            "name": "calculate_compound_interest",
+            "arguments": {
+              "n": 4,
+              "principal": 10000,
+              "rate": 0.05,
+              "time": 10
+            }
+          },
+          "input_tokens": 313,
+          "output_tokens": 52,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:12:16.927737Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "calculate_compound_interest",
+                    "arguments": {
+                      "n": 4,
+                      "principal": 10000,
+                      "rate": 0.05,
+                      "time": 10
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 520623900,
+            "load_duration": 29763700,
+            "prompt_eval_count": 313,
+            "prompt_eval_duration": 42121100,
+            "eval_count": 52,
+            "eval_duration": 442144000
+          }
+        },
+        "simple_python_132": {
+          "id": "simple_python_132",
+          "correct": true,
+          "call": {
+            "name": "calculate_return_on_equity",
+            "arguments": {
+              "dividends_paid": 200000,
+              "net_income": 2000000,
+              "shareholder_equity": 10000000
+            }
+          },
+          "input_tokens": 300,
+          "output_tokens": 64,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:12:17.5759454Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "calculate_return_on_equity",
+                    "arguments": {
+                      "dividends_paid": 200000,
+                      "net_income": 2000000,
+                      "shareholder_equity": 10000000
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 642938500,
+            "load_duration": 28404600,
+            "prompt_eval_count": 300,
+            "prompt_eval_duration": 27918300,
+            "eval_count": 64,
+            "eval_duration": 582315600
+          }
+        },
+        "simple_python_133": {
+          "id": "simple_python_133",
+          "correct": true,
+          "call": {
+            "name": "finance.predict_future_value",
+            "arguments": {
+              "annual_interest_rate": 0.05,
+              "compounding_periods_per_year": 12,
+              "present_value": 5000,
+              "time_years": 3
+            }
+          },
+          "input_tokens": 304,
+          "output_tokens": 59,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:12:18.1443801Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "finance.predict_future_value",
+                    "arguments": {
+                      "annual_interest_rate": 0.05,
+                      "compounding_periods_per_year": 12,
+                      "present_value": 5000,
+                      "time_years": 3
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 563987900,
+            "load_duration": 20562700,
+            "prompt_eval_count": 304,
+            "prompt_eval_duration": 26522000,
+            "eval_count": 59,
+            "eval_duration": 512917200
+          }
+        },
+        "simple_python_134": {
+          "id": "simple_python_134",
+          "correct": true,
+          "call": {
+            "name": "investment.predictProfit",
+            "arguments": {
+              "annual_return": 0.07,
+              "investment_amount": 5000,
+              "years": 5
+            }
+          },
+          "input_tokens": 254,
+          "output_tokens": 45,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:12:18.5890414Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "investment.predictProfit",
+                    "arguments": {
+                      "annual_return": 0.07,
+                      "investment_amount": 5000,
+                      "years": 5
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 439041500,
+            "load_duration": 24566600,
+            "prompt_eval_count": 254,
+            "prompt_eval_duration": 25511900,
+            "eval_count": 45,
+            "eval_duration": 384882300
+          }
+        },
+        "simple_python_135": {
+          "id": "simple_python_135",
+          "correct": true,
+          "call": {
+            "name": "calculate_return_on_investment",
+            "arguments": {
+              "dividend": 2,
+              "purchase_price": 20,
+              "sale_price": 25
+            }
+          },
+          "input_tokens": 261,
+          "output_tokens": 44,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:12:19.027217Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "calculate_return_on_investment",
+                    "arguments": {
+                      "dividend": 2,
+                      "purchase_price": 20,
+                      "sale_price": 25
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 433349600,
+            "load_duration": 29682800,
+            "prompt_eval_count": 261,
+            "prompt_eval_duration": 29897500,
+            "eval_count": 44,
+            "eval_duration": 371218000
+          }
+        },
+        "simple_python_136": {
+          "id": "simple_python_136",
+          "correct": true,
+          "call": {
+            "name": "compound_interest",
+            "arguments": {
+              "annual_rate": 5,
+              "compounding_freq": "monthly",
+              "principal": 10000,
+              "time_in_years": 5
+            }
+          },
+          "input_tokens": 297,
+          "output_tokens": 51,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:12:19.5341852Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "compound_interest",
+                    "arguments": {
+                      "annual_rate": 5,
+                      "compounding_freq": "monthly",
+                      "principal": 10000,
+                      "time_in_years": 5
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 500810900,
+            "load_duration": 26834100,
+            "prompt_eval_count": 297,
+            "prompt_eval_duration": 37923500,
+            "eval_count": 51,
+            "eval_duration": 432562500
+          }
+        },
+        "simple_python_137": {
+          "id": "simple_python_137",
+          "correct": true,
+          "call": {
+            "name": "calculate_stock_return",
+            "arguments": {
+              "annual_growth_rate": 0.06,
+              "holding_period": 5,
+              "investment_amount": 5000
+            }
+          },
+          "input_tokens": 306,
+          "output_tokens": 47,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:12:20.020507Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "calculate_stock_return",
+                    "arguments": {
+                      "annual_growth_rate": 0.06,
+                      "holding_period": 5,
+                      "investment_amount": 5000
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 474462000,
+            "load_duration": 23684400,
+            "prompt_eval_count": 306,
+            "prompt_eval_duration": 45969400,
+            "eval_count": 47,
+            "eval_duration": 401332400
+          }
+        },
+        "simple_python_138": {
+          "id": "simple_python_138",
+          "correct": true,
+          "call": {
+            "name": "portfolio_future_value",
+            "arguments": {
+              "expected_annual_return": 0.05,
+              "invested_amount": 5000,
+              "stock": "X",
+              "years": 7
+            }
+          },
+          "input_tokens": 309,
+          "output_tokens": 54,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:12:20.5771826Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "portfolio_future_value",
+                    "arguments": {
+                      "expected_annual_return": 0.05,
+                      "invested_amount": 5000,
+                      "stock": "X",
+                      "years": 7
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 551087500,
+            "load_duration": 30575800,
+            "prompt_eval_count": 309,
+            "prompt_eval_duration": 61682700,
+            "eval_count": 54,
+            "eval_duration": 453831000
+          }
+        },
+        "simple_python_139": {
+          "id": "simple_python_139",
+          "correct": true,
+          "call": {
+            "name": "estimate_mutual_fund_return",
+            "arguments": {
+              "investment_amount": 2000,
+              "yearly_yield": 5,
+              "years": 3
+            }
+          },
+          "input_tokens": 284,
+          "output_tokens": 48,
+          "raw": {
+            "model": "qwen3:1.7b",
+            "created_at": "2026-09-20T06:12:21.0692676Z",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "function": {
+                    "name": "estimate_mutual_fund_return",
+                    "arguments": {
+                      "investment_amount": 2000,
+                      "yearly_yield": 5,
+                      "years": 3
+                    }
+                  }
+                }
+              ]
+            },
+            "done_reason": "stop",
+            "done": true,
+            "total_duration": 487104200,
+            "load_duration": 35052200,
+            "prompt_eval_count": 284,
+            "prompt_eval_duration": 22555100,
+            "eval_count": 48,
+            "eval_duration": 426021200
+          }
+        }
+      }
+    }
+  }
+}

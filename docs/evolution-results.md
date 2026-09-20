@@ -133,3 +133,14 @@ seed29 没有任何候选通过安全门，因此冻结算法与所有基线都�
 候选池开发最优为 95%，随机选择四个候选命中该最优的精确概率为 50%；本次普通 GP 与固定随机轨迹都未命中。查看这一失败后，开发了 post-hoc 的反馈 warm-start：将开发错误预测与可接受调用编码成向量，优先评估与失败模式最相似的候选，再继续 GP。它命中开发最优并在验证提升 5 个百分点，但冻结确认中相对基线少对 1 条、Token 更多；配对结果为修复 2 条、改坏 3 条，双侧精确符号检验 `p=1.0`。发布产物因此记录 `REJECTED_CONFIRMATION_REGRESSION` 并部署基线。
 
 这个 pilot 提供了真实外部数据上的“探索提升但确认回滚”证据，支持系统的失败反思、有限预算搜索、冻结确认与安全发布故事；它不支持算法已有稳定增益。完整原始预测见 [实验报告](../evaluation/results/bfcl-prompt-evolution-seed17/report.json)、[冻结确认](../evaluation/results/bfcl-prompt-evolution-seed17/confirmation.json) 和 [发布决策](../evaluation/results/bfcl-prompt-evolution-seed17/release.json)。确认 ID 在开发报告中预先登记，`verify_evidence.py` 会离线重算评分、轨迹、配对变化和文件哈希。
+
+冻结方法随后在完全不同的 `simple_python_120..239` 与 seed29 上复现。为解决 qwen3 在兼容端点偶发 120 秒思考长尾，执行协议预先固定为 Ollama 原生接口、系统 `/no_think` 和 128 completion-token 上限；两条失败的 serving 尝试保留为 incomplete，不混入正式报告。
+
+| seed29 新切分 | 开发 | 验证 | 确认 |
+|---|---:|---:|---|
+| 固定基线 | 20/20（100%） | 37/40（92.5%） | 保持封存 |
+| 固定随机，4 次 | 20/20（100%） | 37/40（92.5%） | 不运行 |
+| 纯文本 GP，4 次 | 20/20（100%） | 37/40（92.5%） | 不运行 |
+| 失败反馈向量 + GP | 20/20（100%） | 37/40（92.5%） | 不运行 |
+
+开发集已经饱和，三个方法均无严格验证增益，发布门直接输出 `REJECTED_NO_VALIDATION_GAIN`，没有为追求结果而解封确认集。见 [seed29 分析](../evaluation/results/bfcl-native-128-seed29/analysis.md)。这进一步说明目前没有“反馈 warm-start 稳定提升”的证据，也暴露出需要更难且分层的开发任务。
