@@ -11,6 +11,7 @@ from agentflow.optimization.evolution import grade
 from agentflow.optimization.pareto import instance_pareto_front, hybrid_pareto_front, complementary_pairs
 from agentflow.optimization.structural import risk_aware_release
 from agentflow.optimization.safe_bo import estimated_inference_cost, validation_feasible
+from agentflow.benchmarks import BFCLCall, score_bfcl_call
 
 
 def verify(folder):
@@ -231,12 +232,69 @@ def verify_safeflow(path):
     return 'PASS'
 
 
+def verify_bfcl(folder):
+    data_path=ROOT/'evaluation/external/BFCL/berkeley-function-call-leaderboard/bfcl_eval/data/BFCL_v4_simple_python.json'
+    answers_path=ROOT/'evaluation/external/BFCL/berkeley-function-call-leaderboard/bfcl_eval/data/possible_answer/BFCL_v4_simple_python.json'
+    cases=[json.loads(line) for line in data_path.read_text(encoding='utf-8').splitlines()]
+    answers={item['id']:item['ground_truth'] for item in (json.loads(line) for line in answers_path.read_text(encoding='utf-8').splitlines())}
+    report_path=folder/'report.json'; report=json.loads(report_path.read_text(encoding='utf-8')); signature=report['signature']
+    assert signature['data_sha256']==hashlib.sha256(data_path.read_bytes()).hexdigest()
+    assert signature['answers_sha256']==hashlib.sha256(answers_path.read_bytes()).hexdigest()
+    assert signature['development_ids']==[case['id'] for case in cases[:20]]
+    assert signature['validation_ids']==[case['id'] for case in cases[20:60]]
+    assert signature['sealed_confirmation_ids']==[case['id'] for case in cases[60:120]]
+    def check_rows(rows,ids):
+        assert set(rows)==set(ids)
+        for case_id,row in rows.items():
+            call=row['call']; parsed=None if call is None else BFCLCall(call['name'],call['arguments'])
+            assert row['correct']==score_bfcl_call(parsed,answers[case_id])
+    def check_summary(rows,summary):
+        assert summary['correct']==sum(row['correct'] for row in rows.values())
+        assert summary['n']==len(rows) and summary['accuracy']==summary['correct']/summary['n']
+        assert summary['tokens']==sum(row['input_tokens']+row['output_tokens'] for row in rows.values())
+    for pid,item in report['evaluations'].items():
+        assert pid in report['prompts']
+        for split,ids in [('development',signature['development_ids']),('validation',signature['validation_ids'])]:
+            check_rows(item[split],ids); check_summary(item[split],item[split+'_summary'])
+    result=report['result']; budget=signature['budget']; scores={pid:item['development_summary']['accuracy'] for pid,item in report['evaluations'].items()}
+    baseline_id=next(pid for pid,prompt in report['prompts'].items() if prompt.startswith('Use the supplied function to satisfy the user.'))
+    candidates=[pid for pid in report['prompts'] if pid!=baseline_id]
+    subsets=list(itertools.combinations(candidates,budget)); bests=[max(scores[pid] for pid in (baseline_id,)+subset) for subset in subsets]
+    assert result['oracle_development']==max(scores.values()) and result['random_exact']['subsets']==len(subsets)
+    assert abs(result['random_exact']['mean_best']-sum(bests)/len(bests))<1e-12
+    assert abs(result['random_exact']['probability_find_oracle']-sum(value==result['oracle_development'] for value in bests)/len(bests))<1e-12
+    assert report['reflection_ranking']==sorted(candidates,key=lambda pid:(report['reflection_similarity'][pid],pid),reverse=True)
+    for trajectory in result['trajectories'].values():
+        assert len(trajectory['steps'])==budget and len(set(trajectory['steps']))==budget
+        assert set(trajectory['steps'])<=set(candidates)
+        assert trajectory['winner'] in [baseline_id]+trajectory['steps']
+        assert trajectory['best_development']==max(scores[pid] for pid in [baseline_id]+trajectory['steps'])
+    confirmation_path=folder/'confirmation.json'; confirmation=json.loads(confirmation_path.read_text(encoding='utf-8'))
+    assert confirmation['signature']['source_report_sha256']==hashlib.sha256(report_path.read_bytes()).hexdigest()
+    assert confirmation['signature']['ids']==signature['sealed_confirmation_ids']
+    for name,rows in confirmation['rows'].items():
+        check_rows(rows,signature['sealed_confirmation_ids']); check_summary(rows,confirmation['summary'][name])
+    base,child=confirmation['rows']['baseline'],confirmation['rows']['reflection_gp']
+    improved=sum(not base[key]['correct'] and child[key]['correct'] for key in base)
+    regressed=sum(base[key]['correct'] and not child[key]['correct'] for key in base)
+    assert confirmation['paired']['improved']==improved and confirmation['paired']['regressed']==regressed
+    release=json.loads((folder/'release.json').read_text(encoding='utf-8'))
+    assert release['experiment_sha256']==hashlib.sha256(report_path.read_bytes()).hexdigest()
+    assert release['confirmation_sha256']==hashlib.sha256(confirmation_path.read_bytes()).hexdigest()
+    assert release['released']==(confirmation['summary']['reflection_gp']['accuracy']>confirmation['summary']['baseline']['accuracy'] and regressed<=improved)
+    return 'PASS'
+
+
 if __name__ == '__main__':
     for path in sorted((ROOT/'evaluation'/'results').glob('*/report.json')):
         payload=json.loads(path.read_text(encoding='utf-8'))
+        if payload.get('signature',{}).get('protocol','').startswith('BFCL-derived'):
+            continue
         verifier=verify_pareto if 'pair_ranking' in payload else verify_joint if 'evaluation_cache' in payload else verify
         print(path.parent.name+': '+verifier(path.parent))
     for path in sorted((ROOT/'evaluation'/'results').glob('*/acquisition.json')):
         print(path.parent.name+': '+verify_acquisition(path))
     for path in sorted((ROOT/'evaluation'/'results').glob('*/benchmark.json')):
         print(path.parent.name+': '+verify_safeflow(path))
+    for path in sorted((ROOT/'evaluation'/'results').glob('bfcl-prompt-evolution-*/report.json')):
+        print(path.parent.name+': '+verify_bfcl(path.parent))
