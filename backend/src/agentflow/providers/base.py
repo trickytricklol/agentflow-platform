@@ -73,6 +73,7 @@ class OllamaProvider(ModelProvider):
 
     def chat(self, messages: list[ChatMessage], *, model: str, temperature: float = 0.0, **kwargs: Any) -> ModelResponse:
         options={"temperature":temperature}
+        kwargs.pop("tool_choice",None)
         for key in ("seed","num_predict"):
             if key in kwargs: options[key]=kwargs.pop(key)
         if "max_tokens" in kwargs: options["num_predict"]=kwargs.pop("max_tokens")

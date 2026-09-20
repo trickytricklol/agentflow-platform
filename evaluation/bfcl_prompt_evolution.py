@@ -18,7 +18,7 @@ sys.path.insert(0,str(ROOT/'backend'/'src'))
 from agentflow.benchmarks import evaluate_bfcl_case
 from agentflow.optimization import BayesianExperiment,GaussianProcessOptimizer,OllamaEmbeddingProvider
 from agentflow.optimization.bayesian import BayesianObservation
-from agentflow.providers import ChatMessage,OpenAICompatibleProvider
+from agentflow.providers import ChatMessage,OpenAICompatibleProvider,OllamaProvider
 from bfcl_native_eval import DATA,ANSWERS,DEFAULT_PROMPT,read_jsonl
 
 
@@ -31,6 +31,13 @@ def summary(rows: dict) -> dict:
     return {'correct':sum(row['correct'] for row in values),'n':len(values),
             'accuracy':sum(row['correct'] for row in values)/len(values),
             'tokens':sum(row['input_tokens']+row['output_tokens'] for row in values)}
+
+
+def evaluate_or_error(provider,case,ground_truth,prompt,seed):
+    try: return evaluate_bfcl_case(provider,'qwen3:1.7b',case,ground_truth,prompt,seed)
+    except Exception as exc:
+        return {'id':case['id'],'correct':False,'call':None,'input_tokens':0,'output_tokens':0,'raw':{},
+                'error':type(exc).__name__+': '+str(exc)}
 
 
 def parse_candidates(content: str) -> list[str]:
@@ -66,16 +73,23 @@ def generate_candidates(provider,failures,seed):
 
 def main():
     parser=argparse.ArgumentParser(); parser.add_argument('--output',required=True); parser.add_argument('--seed',type=int,default=17); parser.add_argument('--budget',type=int,default=4)
+    parser.add_argument('--development-offset',type=int,default=0)
+    parser.add_argument('--native-no-think',action='store_true')
     args=parser.parse_args(); target=ROOT/args.output
     cases=read_jsonl(DATA); answers={item['id']:item['ground_truth'] for item in read_jsonl(ANSWERS)}
-    split_cases={'development':cases[:20],'validation':cases[20:60]}
+    start=args.development_offset
+    if start<0 or start+120>len(cases): raise ValueError('development offset leaves insufficient fixed splits')
+    split_cases={'development':cases[start:start+20],'validation':cases[start+20:start+60]}
     signature={'data_sha256':hashlib.sha256(DATA.read_bytes()).hexdigest(),'answers_sha256':hashlib.sha256(ANSWERS.read_bytes()).hexdigest(),
                'development_ids':[item['id'] for item in split_cases['development']],
                'validation_ids':[item['id'] for item in split_cases['validation']],
-               'sealed_confirmation_ids':[item['id'] for item in cases[60:120]],
+               'sealed_confirmation_ids':[item['id'] for item in cases[start+60:start+120]],
                'task_model':'qwen3:1.7b','mutation_model':'qwen3:4b','seed':args.seed,'budget':args.budget,
                'protocol':'BFCL-derived native tool-call score; full candidate table for audit; confirmation sealed; not official BFCL'}
+    if start: signature['development_offset']=start
+    if args.native_no_think: signature['task_transport']='ollama-native-no-think-command'
     provider=OpenAICompatibleProvider('http://127.0.0.1:11434/v1','local-ollama',120)
+    task_provider=OllamaProvider(timeout=120) if args.native_no_think else provider
     if target.exists():
         report=json.loads(target.read_text(encoding='utf-8'))
         if report['signature']!=signature: raise ValueError('refusing to mix configurations')
@@ -86,7 +100,7 @@ def main():
     development=baseline.setdefault('development',{})
     for case in split_cases['development']:
         if case['id'] not in development:
-            development[case['id']]=evaluate_bfcl_case(provider,'qwen3:1.7b',case,answers[case['id']],DEFAULT_PROMPT,args.seed)
+            development[case['id']]=evaluate_or_error(task_provider,case,answers[case['id']],DEFAULT_PROMPT,args.seed)
             target.parent.mkdir(parents=True,exist_ok=True); target.write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
     if 'mutation_raw' not in report:
         failures=[{'question':case['question'][0][-1]['content'],'predicted':development[case['id']]['call'],'acceptable':answers[case['id']]}
@@ -101,7 +115,7 @@ def main():
             rows=evaluation.setdefault(split,{})
             for case in items:
                 if case['id'] not in rows:
-                    rows[case['id']]=evaluate_bfcl_case(provider,'qwen3:1.7b',case,answers[case['id']],prompt,args.seed)
+                    rows[case['id']]=evaluate_or_error(task_provider,case,answers[case['id']],prompt,args.seed)
                     target.write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
                     print(pid,split,len(rows),rows[case['id']]['correct'],flush=True)
             evaluation[split+'_summary']=summary(rows)

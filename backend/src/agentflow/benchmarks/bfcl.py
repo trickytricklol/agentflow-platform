@@ -68,7 +68,7 @@ def _openai_tools(functions: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def _extract_call(response: ModelResponse) -> BFCLCall | None:
     choices=response.raw.get("choices", [])
-    tool_calls=choices[0].get("message", {}).get("tool_calls", []) if choices else []
+    tool_calls=choices[0].get("message", {}).get("tool_calls", []) if choices else response.raw.get("message",{}).get("tool_calls",[])
     if len(tool_calls) != 1:
         return None
     function=tool_calls[0].get("function", {})
@@ -85,8 +85,9 @@ def _extract_call(response: ModelResponse) -> BFCLCall | None:
 
 def evaluate_bfcl_case(provider: ModelProvider, model: str, case: dict[str, Any], ground_truth: list[dict[str, Any]], system_prompt: str, seed: int) -> dict[str, Any]:
     question=case["question"][0]
-    messages=[ChatMessage("system", system_prompt)]+[ChatMessage(item["role"], item["content"]) for item in question]
-    response=provider.chat(messages, model=model, temperature=0.0, tools=_openai_tools(case["function"]), tool_choice="required", seed=seed, max_tokens=1024)
+    effective_prompt=system_prompt+("\n/no_think" if provider.name=="ollama" else "")
+    messages=[ChatMessage("system", effective_prompt)]+[ChatMessage(item["role"], item["content"]) for item in question]
+    response=provider.chat(messages, model=model, temperature=0.0, tools=_openai_tools(case["function"]), tool_choice="required", seed=seed, max_tokens=128, think=False)
     call=_extract_call(response)
     return {
         "id":case["id"],
