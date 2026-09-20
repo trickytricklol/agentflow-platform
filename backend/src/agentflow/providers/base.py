@@ -60,3 +60,25 @@ class OpenAICompatibleProvider(ModelProvider):
         choice = raw.get("choices", [{}])[0]
         usage = raw.get("usage", {})
         return ModelResponse(choice.get("message", {}).get("content", ""), raw.get("model", model), usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0), raw)
+
+
+class OllamaProvider(ModelProvider):
+    """Native Ollama client, including explicit thinking control."""
+
+    name = "ollama"
+
+    def __init__(self, base_url: str = "http://127.0.0.1:11434", timeout: float = 60.0):
+        self.base_url = base_url.rstrip("/")
+        self.timeout = timeout
+
+    def chat(self, messages: list[ChatMessage], *, model: str, temperature: float = 0.0, **kwargs: Any) -> ModelResponse:
+        options={"temperature":temperature}
+        for key in ("seed","num_predict"):
+            if key in kwargs: options[key]=kwargs.pop(key)
+        if "max_tokens" in kwargs: options["num_predict"]=kwargs.pop("max_tokens")
+        payload={"model":model,"messages":[{"role":item.role,"content":item.content} for item in messages],"stream":False,"options":options,**kwargs}
+        request=Request(self.base_url+"/api/chat",data=json.dumps(payload).encode("utf-8"),headers={"Content-Type":"application/json"},method="POST")
+        with urlopen(request,timeout=self.timeout) as response:
+            raw=json.loads(response.read().decode("utf-8"))
+        message=raw.get("message",{})
+        return ModelResponse(message.get("content",""),raw.get("model",model),raw.get("prompt_eval_count",0),raw.get("eval_count",0),raw)

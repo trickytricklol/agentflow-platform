@@ -1,0 +1,950 @@
+{
+  "signature": {
+    "data_sha256": "6cb4c932a8db34e27cc88b30d95522a57439b998054a843755cdc48ce07e49d7",
+    "answers_sha256": "7381929c55bb6c9d0a9476bf3c92d24969994ffb3ffb58b0207f917e9510326d",
+    "offset": 0,
+    "limit": 20,
+    "model": "qwen3:1.7b",
+    "seed": 17,
+    "prompt": "Use the supplied function to satisfy the user. Ground every argument in the request and function schema; omit optional arguments unless explicitly requested.",
+    "protocol": "BFCL-derived simple_python native tool-call exact acceptable-value score; not official BFCL"
+  },
+  "rows": {
+    "simple_python_0": {
+      "id": "simple_python_0",
+      "correct": true,
+      "call": {
+        "name": "calculate_triangle_area",
+        "arguments": {
+          "base": 10,
+          "height": 5,
+          "unit": "units"
+        }
+      },
+      "input_tokens": 236,
+      "output_tokens": 356,
+      "raw": {
+        "id": "chatcmpl-779",
+        "object": "chat.completion",
+        "created": 1789828623,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_d6x8spo1",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "calculate_triangle_area",
+                    "arguments": "{\"base\":10,\"height\":5,\"unit\":\"units\"}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 236,
+          "completion_tokens": 356,
+          "total_tokens": 592
+        }
+      }
+    },
+    "simple_python_1": {
+      "id": "simple_python_1",
+      "correct": true,
+      "call": {
+        "name": "math.factorial",
+        "arguments": {
+          "number": 5
+        }
+      },
+      "input_tokens": 185,
+      "output_tokens": 150,
+      "raw": {
+        "id": "chatcmpl-917",
+        "object": "chat.completion",
+        "created": 1789828625,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_yv3lrb49",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "math.factorial",
+                    "arguments": "{\"number\":5}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 185,
+          "completion_tokens": 150,
+          "total_tokens": 335
+        }
+      }
+    },
+    "simple_python_2": {
+      "id": "simple_python_2",
+      "correct": true,
+      "call": {
+        "name": "math.hypot",
+        "arguments": {
+          "x": 4,
+          "y": 5,
+          "z": 0
+        }
+      },
+      "input_tokens": 261,
+      "output_tokens": 368,
+      "raw": {
+        "id": "chatcmpl-344",
+        "object": "chat.completion",
+        "created": 1789828628,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_iimh8nxk",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "math.hypot",
+                    "arguments": "{\"x\":4,\"y\":5,\"z\":0}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 261,
+          "completion_tokens": 368,
+          "total_tokens": 629
+        }
+      }
+    },
+    "simple_python_3": {
+      "id": "simple_python_3",
+      "correct": true,
+      "call": {
+        "name": "algebra.quadratic_roots",
+        "arguments": {
+          "a": 1,
+          "b": -3,
+          "c": 2
+        }
+      },
+      "input_tokens": 234,
+      "output_tokens": 174,
+      "raw": {
+        "id": "chatcmpl-753",
+        "object": "chat.completion",
+        "created": 1789828630,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_ci1xn083",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "algebra.quadratic_roots",
+                    "arguments": "{\"a\":1,\"b\":-3,\"c\":2}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 234,
+          "completion_tokens": 174,
+          "total_tokens": 408
+        }
+      }
+    },
+    "simple_python_4": {
+      "id": "simple_python_4",
+      "correct": true,
+      "call": {
+        "name": "solve_quadratic_equation",
+        "arguments": {
+          "a": 2,
+          "b": 6,
+          "c": 5
+        }
+      },
+      "input_tokens": 223,
+      "output_tokens": 379,
+      "raw": {
+        "id": "chatcmpl-647",
+        "object": "chat.completion",
+        "created": 1789828634,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_w4khjgz4",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "solve_quadratic_equation",
+                    "arguments": "{\"a\":2,\"b\":6,\"c\":5}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 223,
+          "completion_tokens": 379,
+          "total_tokens": 602
+        }
+      }
+    },
+    "simple_python_5": {
+      "id": "simple_python_5",
+      "correct": true,
+      "call": {
+        "name": "solve_quadratic",
+        "arguments": {
+          "a": 3,
+          "b": -11,
+          "c": -4,
+          "root_type": "all"
+        }
+      },
+      "input_tokens": 319,
+      "output_tokens": 456,
+      "raw": {
+        "id": "chatcmpl-786",
+        "object": "chat.completion",
+        "created": 1789828638,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_cd5zuv96",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "solve_quadratic",
+                    "arguments": "{\"a\":3,\"b\":-11,\"c\":-4,\"root_type\":\"all\"}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 319,
+          "completion_tokens": 456,
+          "total_tokens": 775
+        }
+      }
+    },
+    "simple_python_6": {
+      "id": "simple_python_6",
+      "correct": true,
+      "call": {
+        "name": "solve_quadratic",
+        "arguments": {
+          "a": 2,
+          "b": 5,
+          "c": 3
+        }
+      },
+      "input_tokens": 224,
+      "output_tokens": 470,
+      "raw": {
+        "id": "chatcmpl-84",
+        "object": "chat.completion",
+        "created": 1789828642,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_bjv6agnf",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "solve_quadratic",
+                    "arguments": "{\"a\":2,\"b\":5,\"c\":3}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 224,
+          "completion_tokens": 470,
+          "total_tokens": 694
+        }
+      }
+    },
+    "simple_python_7": {
+      "id": "simple_python_7",
+      "correct": true,
+      "call": {
+        "name": "calculate_circumference",
+        "arguments": {
+          "radius": 4,
+          "unit": "inches"
+        }
+      },
+      "input_tokens": 219,
+      "output_tokens": 202,
+      "raw": {
+        "id": "chatcmpl-712",
+        "object": "chat.completion",
+        "created": 1789828644,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_4cnudeye",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "calculate_circumference",
+                    "arguments": "{\"radius\":4,\"unit\":\"inches\"}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 219,
+          "completion_tokens": 202,
+          "total_tokens": 421
+        }
+      }
+    },
+    "simple_python_8": {
+      "id": "simple_python_8",
+      "correct": true,
+      "call": {
+        "name": "geometry.area_circle",
+        "arguments": {
+          "radius": 10
+        }
+      },
+      "input_tokens": 212,
+      "output_tokens": 181,
+      "raw": {
+        "id": "chatcmpl-578",
+        "object": "chat.completion",
+        "created": 1789828646,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_09o0va7f",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "geometry.area_circle",
+                    "arguments": "{\"radius\":10}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 212,
+          "completion_tokens": 181,
+          "total_tokens": 393
+        }
+      }
+    },
+    "simple_python_9": {
+      "id": "simple_python_9",
+      "correct": true,
+      "call": {
+        "name": "geometry.calculate_area_circle",
+        "arguments": {
+          "radius": 5,
+          "unit": "units"
+        }
+      },
+      "input_tokens": 212,
+      "output_tokens": 145,
+      "raw": {
+        "id": "chatcmpl-328",
+        "object": "chat.completion",
+        "created": 1789828647,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_v3poau2q",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "geometry.calculate_area_circle",
+                    "arguments": "{\"radius\":5,\"unit\":\"units\"}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 212,
+          "completion_tokens": 145,
+          "total_tokens": 357
+        }
+      }
+    },
+    "simple_python_10": {
+      "id": "simple_python_10",
+      "correct": true,
+      "call": {
+        "name": "calculate_area",
+        "arguments": {
+          "base": 6,
+          "height": 10,
+          "unit": "cm"
+        }
+      },
+      "input_tokens": 254,
+      "output_tokens": 226,
+      "raw": {
+        "id": "chatcmpl-795",
+        "object": "chat.completion",
+        "created": 1789828650,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_xyokreym",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "calculate_area",
+                    "arguments": "{\"base\":6,\"height\":10,\"unit\":\"cm\"}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 254,
+          "completion_tokens": 226,
+          "total_tokens": 480
+        }
+      }
+    },
+    "simple_python_11": {
+      "id": "simple_python_11",
+      "correct": true,
+      "call": {
+        "name": "calculate_triangle_area",
+        "arguments": {
+          "base": 10,
+          "height": 5
+        }
+      },
+      "input_tokens": 219,
+      "output_tokens": 179,
+      "raw": {
+        "id": "chatcmpl-632",
+        "object": "chat.completion",
+        "created": 1789828652,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_xpfvo98z",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "calculate_triangle_area",
+                    "arguments": "{\"base\":10,\"height\":5}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 219,
+          "completion_tokens": 179,
+          "total_tokens": 398
+        }
+      }
+    },
+    "simple_python_12": {
+      "id": "simple_python_12",
+      "correct": true,
+      "call": {
+        "name": "geometry.circumference",
+        "arguments": {
+          "radius": 3
+        }
+      },
+      "input_tokens": 207,
+      "output_tokens": 143,
+      "raw": {
+        "id": "chatcmpl-484",
+        "object": "chat.completion",
+        "created": 1789828653,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_y64fp6u0",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "geometry.circumference",
+                    "arguments": "{\"radius\":3}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 207,
+          "completion_tokens": 143,
+          "total_tokens": 350
+        }
+      }
+    },
+    "simple_python_13": {
+      "id": "simple_python_13",
+      "correct": false,
+      "call": {
+        "name": "calculate_area_under_curve",
+        "arguments": {
+          "function": "y = x**2",
+          "interval": [
+            1,
+            3
+          ]
+        }
+      },
+      "input_tokens": 265,
+      "output_tokens": 231,
+      "raw": {
+        "id": "chatcmpl-186",
+        "object": "chat.completion",
+        "created": 1789828655,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_wf4rpsje",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "calculate_area_under_curve",
+                    "arguments": "{\"function\":\"y = x**2\",\"interval\":[1,3]}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 265,
+          "completion_tokens": 231,
+          "total_tokens": 496
+        }
+      }
+    },
+    "simple_python_14": {
+      "id": "simple_python_14",
+      "correct": false,
+      "call": {
+        "name": "calculate_derivative",
+        "arguments": {
+          "function": "3x^2 + 2x - 1",
+          "x_value": 0
+        }
+      },
+      "input_tokens": 217,
+      "output_tokens": 532,
+      "raw": {
+        "id": "chatcmpl-898",
+        "object": "chat.completion",
+        "created": 1789828660,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_4jw49muw",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "calculate_derivative",
+                    "arguments": "{\"function\":\"3x^2 + 2x - 1\",\"x_value\":0}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 217,
+          "completion_tokens": 532,
+          "total_tokens": 749
+        }
+      }
+    },
+    "simple_python_15": {
+      "id": "simple_python_15",
+      "correct": false,
+      "call": {
+        "name": "integrate",
+        "arguments": {
+          "end_x": 3,
+          "function": "x^3",
+          "method": "simpson",
+          "start_x": -2
+        }
+      },
+      "input_tokens": 299,
+      "output_tokens": 221,
+      "raw": {
+        "id": "chatcmpl-142",
+        "object": "chat.completion",
+        "created": 1789828662,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_fm2pw6je",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "integrate",
+                    "arguments": "{\"end_x\":3,\"function\":\"x^3\",\"method\":\"simpson\",\"start_x\":-2}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 299,
+          "completion_tokens": 221,
+          "total_tokens": 520
+        }
+      }
+    },
+    "simple_python_16": {
+      "id": "simple_python_16",
+      "correct": false,
+      "call": {
+        "name": "calculus.derivative",
+        "arguments": {
+          "function": "2x^2",
+          "function_variable": "x",
+          "value": 1
+        }
+      },
+      "input_tokens": 247,
+      "output_tokens": 180,
+      "raw": {
+        "id": "chatcmpl-889",
+        "object": "chat.completion",
+        "created": 1789828663,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_r4txyfd3",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "calculus.derivative",
+                    "arguments": "{\"function\":\"2x^2\",\"function_variable\":\"x\",\"value\":1}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 247,
+          "completion_tokens": 180,
+          "total_tokens": 427
+        }
+      }
+    },
+    "simple_python_17": {
+      "id": "simple_python_17",
+      "correct": true,
+      "call": {
+        "name": "get_prime_factors",
+        "arguments": {
+          "formatted": true,
+          "number": 450
+        }
+      },
+      "input_tokens": 209,
+      "output_tokens": 141,
+      "raw": {
+        "id": "chatcmpl-262",
+        "object": "chat.completion",
+        "created": 1789828665,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_z8nwt2gw",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "get_prime_factors",
+                    "arguments": "{\"formatted\":true,\"number\":450}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 209,
+          "completion_tokens": 141,
+          "total_tokens": 350
+        }
+      }
+    },
+    "simple_python_18": {
+      "id": "simple_python_18",
+      "correct": true,
+      "call": {
+        "name": "number_analysis.prime_factors",
+        "arguments": {
+          "number": 123456
+        }
+      },
+      "input_tokens": 189,
+      "output_tokens": 130,
+      "raw": {
+        "id": "chatcmpl-735",
+        "object": "chat.completion",
+        "created": 1789828666,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_17l832ku",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "number_analysis.prime_factors",
+                    "arguments": "{\"number\":123456}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 189,
+          "completion_tokens": 130,
+          "total_tokens": 319
+        }
+      }
+    },
+    "simple_python_19": {
+      "id": "simple_python_19",
+      "correct": true,
+      "call": {
+        "name": "math.gcd",
+        "arguments": {
+          "num1": 40,
+          "num2": 50
+        }
+      },
+      "input_tokens": 205,
+      "output_tokens": 159,
+      "raw": {
+        "id": "chatcmpl-509",
+        "object": "chat.completion",
+        "created": 1789828667,
+        "model": "qwen3:1.7b",
+        "system_fingerprint": "fp_ollama",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call_mamgkyac",
+                  "index": 0,
+                  "type": "function",
+                  "function": {
+                    "name": "math.gcd",
+                    "arguments": "{\"num1\":40,\"num2\":50}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 205,
+          "completion_tokens": 159,
+          "total_tokens": 364
+        }
+      }
+    }
+  },
+  "summary": {
+    "correct": 16,
+    "n": 20,
+    "accuracy": 0.8,
+    "tokens": 9659
+  }
+}

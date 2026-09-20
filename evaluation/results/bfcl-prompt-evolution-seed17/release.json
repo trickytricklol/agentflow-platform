@@ -1,0 +1,38 @@
+{
+  "experiment_sha256": "550a713e3c2285bad5a7e3698151d9eed3caa37805982f52819712ac82fcefa4",
+  "confirmation_sha256": "344404684e2ef3a404eddc6a31a7d04d6200621a61fe081b06198c084ec63737",
+  "candidate": "31de0cb4f2ff",
+  "released": false,
+  "decision": "REJECTED_CONFIRMATION_REGRESSION",
+  "deployed_variant": "baseline",
+  "rollback_variant": "baseline",
+  "criteria": "strict confirmation accuracy gain and regressions <= improvements",
+  "evidence": {
+    "baseline": {
+      "correct": 55,
+      "n": 60,
+      "accuracy": 0.9166666666666666,
+      "wilson95": [
+        0.8193105798166558,
+        0.9638795433982692
+      ],
+      "tokens": 32811
+    },
+    "candidate": {
+      "correct": 54,
+      "n": 60,
+      "accuracy": 0.9,
+      "wilson95": [
+        0.7985053527602123,
+        0.9533571655261158
+      ],
+      "tokens": 34236
+    },
+    "paired": {
+      "improved": 2,
+      "regressed": 3,
+      "unchanged": 55,
+      "two_sided_exact_sign_p": 1.0
+    }
+  }
+}
