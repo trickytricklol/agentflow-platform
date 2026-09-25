@@ -46,3 +46,44 @@
 - 三次重复验证加业务切片门控后，仅 seed17 random 保持发布；seed17 GP/EI 因 `priority:P2` 退化被拒，seed29 random 同样被拒。
 
 该结果说明联合 demo 搜索比 Pareto merge 更有希望，但单次 12 条验证会误发布。生产故事应强调风险门控和可回滚，而不是只报确认集最高 70.8%。
+
+## 2026-09 轮：ASI 归因反馈与多样性感知采集
+
+对照 2025–2026 自进化方向复查代码后，本轮只做两处**默认关闭、可 A/B** 的增量，不改写既有实验路径与结论：
+
+1. **Actionable Side Information（GEPA，arXiv:2507.19457；AgentEvolver 逐步归因，arXiv:2511.10395）**：
+   严格奖励仍是 route+priority 全对，但新增 `diagnose_output` 把一次失败拆成
+   `format / route / priority` 三子项，并给出实际值 vs 期望。`FeedbackMutator(..., asi=True)`
+   把这份逐子项 `faults` 喂给变异模型，并要求"只修坏的子项、不要重写/回退父代已答对的子项"。
+   此前 `component_score_vector` 已经能算三子项分，但反馈环节只告诉变异模型"错了"，
+   这是把已有归因信号接到反思器上的闭环。`asi=False` 时请求体与指令与历史完全一致。
+2. **Diversity-aware acquisition（EvoTool：blame-aware mutation + diversity-aware selection）**：
+   `GaussianProcessOptimizer(..., diversity_weight=w, xi=xi)`。`w>0` 时把剩余候选的 EI 与
+   嵌入空间新颖度（到已观测提示的平均距离）各自 min-max 归一化后线性标量化，缓解本仓库多次
+   观察到的"候选池 / Pareto 前沿坍缩到 1、GP 只在近邻重复采样"。`w=0` 时逐候选选择与历史 EI 完全相同。
+   `xi` 是经典 EI 探索边际，默认 0。
+
+验证：`backend/tests/test_asi_diversity.py` 新增 8 个用例（归因定位、未改坏的 schema/解析、
+`grade` 旧行为逐字兼容、asi 开关请求体差异、纯新颖度选最远未触达点、参数合法性）。全套 70 passed。
+真实 Ollama A/B（qwen3:1.7b 执行臂 + nomic 嵌入）在独立输出目录跑，不覆盖既有证据。
+
+### 首轮 A/B 实测（seed17，1.7B，48 条自建工单）
+
+脚本 `examples/ab_asi_diversity.py`，同一切分/同一 seed/同一执行臂，只隔离两个变量：
+legacy（asi=False, diversity_weight=0）vs ASI+diverse（asi=True, diversity_weight=0.3）。
+
+- baseline train 0.583；legacy 臂两个候选 train 0.500/0.333，ASI 臂两个候选 train 0.667/0.667
+  —— 逐子项归因反馈确实把训练集候选质量抬上去了（+16~33 个点）。
+- 发布门：legacy 臂在单次验证 0.500>0.417 时 `released=True`；ASI 臂选中验证 0.583 与其自身
+  基线 0.583 持平，按"严格提升"判据 `released=False`。
+- held-out 测试集（24 条，未参与变异/选版）：baseline 0.458，legacy 0.417，ASI+diverse 0.417。
+
+结论（不夸大）：逐子项归因与多样性采集在 12 条训练样本上稳定地抬升训练侧候选分，但没有迁移到
+held-out 测试；单次验证的 legacy "发布"在测试上反而回落，正是 `risk_aware_release` 重复验证门要拦的
+假阳性。这与仓库既有判断一致——瓶颈是样本量与模型容量，不是反馈信号形式。下一步应先扩开发集，
+再用重复验证门复核这两个机制，而不是在 12 条样本上继续调参。
+
+下一步候选（仍未做，按杠杆排序）：
+- 用重复验证观测估计 GP 观测噪声，替换固定 `noise=0.05`；
+- 推理期按工单嵌入动态检索 few-shot（MIPRO/KNN-ICL），替代静态四示例；
+- best-of-N 自洽解码作为可选臂，与单次 greedy 等 token 预算对比。

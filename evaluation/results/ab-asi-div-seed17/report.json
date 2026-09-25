@@ -1,0 +1,116 @@
+{
+  "seed": 17,
+  "model": "qwen3:1.7b",
+  "teacher_model": "qwen3:1.7b",
+  "dataset_sha256": "677501ab0caef2ada94400921f3a9b3f9689ff1d94a5bca12255bb4203085855",
+  "reward": {
+    "metric": "exact_json",
+    "success_weight": 1.0,
+    "token_penalty": 0.0
+  },
+  "arms": {
+    "legacy_ei": {
+      "name": "legacy_ei",
+      "asi": false,
+      "diversity_weight": 0.0,
+      "baseline_train_success": 0.5833333333333334,
+      "baseline_val_success": 0.4166666666666667,
+      "curve": [
+        {
+          "prompt": "Procedure 1: Security for Unauthorized Access\nIf the ticket relates to unauthorized login attempts, forgotten passwords, account breaches, or related concerns, route to 'security'. Prioritize P1 for unresolved issues, P2 for resolved incidents. If the ticket mentions an ongoing outage affecting all users, assign P0.",
+          "train_success": 0.5
+        },
+        {
+          "prompt": "Procedure 2: Billing and Financial Issues\nIf the ticket involves payment-related problems, refunds, or financial concerns, route to 'billing'. Prioritize P0 for ongoing outages affecting all users, P1 for unresolved financial problems, and P2 for resolved incidents.",
+          "train_success": 0.3333333333333333
+        }
+      ],
+      "selected": "Procedure 1: Security for Unauthorized Access\nIf the ticket relates to unauthorized login attempts, forgotten passwords, account breaches, or related concerns, route to 'security'. Prioritize P1 for unresolved issues, P2 for resolved incidents. If the ticket mentions an ongoing outage affecting all users, assign P0.",
+      "selected_val_success": 0.5,
+      "released": true,
+      "mutations": [
+        {
+          "error": "duplicate candidates",
+          "raw": "{\n  \"diagnosis\": \"Three classification procedures are outlined to ensure accurate route and priority assignment based on the ticket content. Procedure 1 focuses on security and access priority checks, Procedure 2 addresses billing and other priority scenarios, and Procedure 3 applies general rules for unresolved incidents.\",\n  \"candidates\": [\n    \"Procedure 1: Security and Access Priority Check\\nCheck if the ticket relates to security (unauthorized access, breaches). If yes, route is security, priority P1. If not, check if it's access (login issues, permissions). If yes, route is access, priority P2 unless it's a resolved incident (P2). If neither, route is other, priority P0.\\n\\nProcedure 2: Billing and Other Priority Check\\nCheck if the ticket is about billing (payments, refunds). If yes, route is billing, priority P1. If not, check if it's other. If yes, route is other, priority P0. If neither, route is access, priority P2 (since questions/resolved are P2).\\n\\nProcedure 3: General Priority and Route Assignment\\nAssign route based on the ticket content. If it's a question or feature request, route is other, priority P2. If it's a resolved incident, route is other, priority P2. If it's a security issue, route is security, priority P1. If it's an access issue, route is access, priority P2 unless resolved. If it's other, route is other, priority P0.\",\n    \"Procedure 1: Security and Access Priority Check\\nCheck if the ticket relates to security (unauthorized access, breaches). If yes, route is security, priority P1. If not, check if it's access (login issues, permissions). If yes, route is access, priority P2 unless it's a resolved incident (P2). If neither, route is other, priority P0.\\n\\nProcedure 2: Billing and Other Priority Check\\nCheck if the ticket is about billing (payments, refunds). If yes, route is billing, priority P1. If not, check if it's other. If yes, route is other, priority P0. If neither, route is access, priority P2 (since questions/resolved are P2).\\n\\nProcedure 3: General Priority and Route Assignment\\nAssign route based on the ticket content. If it's a question or feature request, route is other, priority P2. If it's a resolved incident, route is other, priority P2. If it's a security issue, route is security, priority P1. If it's an access issue, route is access, priority P2 unless resolved. If it's other, route is other, priority P0.\",\n    \"Procedure 1: Security and Access Priority Check\\nCheck if the ticket relates to security (unauthorized access, breaches). If yes, route is security, priority P1. If not, check if it's access (login issues, permissions). If yes, route is access, priority P2 unless it's a resolved incident (P2). If neither, route is other, priority P0.\\n\\nProcedure 2: Billing and Other Priority Check\\nCheck if the ticket is about billing (payments, refunds). If yes, route is billing, priority P1. If not, check if it's other. If yes, route is other, priority P0. If neither, route is access, priority P2 (since questions/resolved are P2).\\n\\nProcedure 3: General Priority and Route Assignment\\nAssign route based on the ticket content. If it's a question or feature request, route is other, priority P2. If it's a resolved incident, route is other, priority P2. If it's a security issue, route is security, priority P1. If it's an access issue, route is access, priority P2 unless resolved. If it's other, route is other, priority P0.\"\n  ]\n}",
+          "input_tokens": 524,
+          "output_tokens": 2104
+        },
+        {
+          "parent": "Apply the supplied business policy carefully. Return the requested JSON with the correct route and priority.",
+          "feedback_ids": [
+            "t01",
+            "t08",
+            "t09",
+            "t11",
+            "t12"
+          ],
+          "diagnosis": "Three classification procedures are proposed to ensure accurate routing and priority assignment based on the ticket content, policy, and precedence rules. Procedures cover unauthorized access, billing issues, and access-related concerns while adhering to priority exceptions and historical outage rules.",
+          "candidates": [
+            "Procedure 1: Security for Unauthorized Access\nIf the ticket relates to unauthorized login attempts, forgotten passwords, account breaches, or related concerns, route to 'security'. Prioritize P1 for unresolved issues, P2 for resolved incidents. If the ticket mentions an ongoing outage affecting all users, assign P0.",
+            "Procedure 2: Billing and Financial Issues\nIf the ticket involves payment-related problems, refunds, or financial concerns, route to 'billing'. Prioritize P0 for ongoing outages affecting all users, P1 for unresolved financial problems, and P2 for resolved incidents.",
+            "Procedure 3: Access for Legitimate Login or Permission Problems\nIf the ticket pertains to legitimate login issues, permission problems, or access-related requests, route to 'access'. Prioritize P1 for unresolved issues, P2 for resolved incidents. Historical/negated outages do not count as ongoing, so P0 is only for ongoing outages."
+          ],
+          "input_tokens": 524,
+          "output_tokens": 1033
+        }
+      ]
+    },
+    "asi_diverse": {
+      "name": "asi_diverse",
+      "asi": true,
+      "diversity_weight": 0.3,
+      "baseline_train_success": 0.5833333333333334,
+      "baseline_val_success": 0.5833333333333334,
+      "curve": [
+        {
+          "prompt": "Classify by policy precedence: security > billing > access > other. For unauthorized access, assign route 'security' and priority 'P1'. For export issues, route 'other' with priority 'P1'. For ongoing outages, route 'other' with priority 'P0'.",
+          "train_success": 0.6666666666666666
+        },
+        {
+          "prompt": "Check route and priority for each input. If route is incorrect, correct it to 'security' for unauthorized access or 'other' for export issues. If priority is incorrect, set 'P1' for unresolved issues or 'P0' for ongoing outages. Ensure JSON output matches policy precedence.",
+          "train_success": 0.6666666666666666
+        }
+      ],
+      "selected": "Apply the supplied business policy carefully. Return the requested JSON with the correct route and priority.",
+      "selected_val_success": 0.5833333333333334,
+      "released": false,
+      "mutations": [
+        {
+          "parent": "Apply the supplied business policy carefully. Return the requested JSON with the correct route and priority.",
+          "feedback_ids": [
+            "t01",
+            "t08",
+            "t09",
+            "t11",
+            "t12"
+          ],
+          "diagnosis": "Fix route and priority for failed classifications. Ensure 'security' with 'P1' for unauthorized access, 'other' with 'P1' for export issues, and 'other' with 'P0' for ongoing outages.",
+          "candidates": [
+            "Classify by policy precedence: security > billing > access > other. For unauthorized access, assign route 'security' and priority 'P1'. For export issues, route 'other' with priority 'P1'. For ongoing outages, route 'other' with priority 'P0'.",
+            "Check route and priority for each input. If route is incorrect, correct it to 'security' for unauthorized access or 'other' for export issues. If priority is incorrect, set 'P1' for unresolved issues or 'P0' for ongoing outages. Ensure JSON output matches policy precedence.",
+            "Apply policy rules: security overrides billing, which overrides access, which overrides other. For unauthorized access, route 'security' and priority 'P1'. For unresolved financial issues, route 'access' and priority 'P1'. For ongoing outages, route 'other' and priority 'P0'. Validate JSON output against policy requirements."
+          ],
+          "input_tokens": 665,
+          "output_tokens": 990
+        }
+      ]
+    }
+  },
+  "test_summary": {
+    "baseline": {
+      "n": 24,
+      "success": 0.4583333333333333,
+      "valid_json": 1.0
+    },
+    "legacy_ei": {
+      "n": 24,
+      "success": 0.4166666666666667,
+      "valid_json": 1.0
+    },
+    "asi_diverse": {
+      "n": 24,
+      "success": 0.4166666666666667,
+      "valid_json": 1.0
+    }
+  }
+}

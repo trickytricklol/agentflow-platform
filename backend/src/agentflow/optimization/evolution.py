@@ -39,14 +39,53 @@ class RewardSpec:
         return cls(**data)
 
 
-def grade(text, expected):
-    """Exact parsed-object equality: no substring credit, extra keys rejected."""
+def diagnose_output(text, expected):
+    """Per-component attribution of a graded output (GEPA-style Actionable Side Information).
+
+    The strict business reward stays all-or-nothing, but the reflective mutator is told *which*
+    sub-field failed and the exact actual/expected values, so it can fix route without rewriting
+    priority or vice versa. Grounded in GEPA ASI (arXiv:2507.19457) and step-wise attribution
+    (AgentEvolver, arXiv:2511.10395).
+    """
+    note = {'correct': False, 'valid_json': False, 'format_ok': False,
+            'route': {'expected': expected['route'], 'actual': None, 'correct': False},
+            'priority': {'expected': expected['priority'], 'actual': None, 'correct': False}}
     try:
         value = json.loads(final_text(text))
     except (ValueError, TypeError):
-        return False, False
-    schema_ok = isinstance(value, dict) and set(value) == {'route', 'priority'} and all(isinstance(v, str) for v in value.values())
-    return schema_ok and value == expected, schema_ok
+        note['faults'] = ['output is not parseable JSON']
+        return note
+    if not (isinstance(value, dict) and set(value) == {'route', 'priority'}
+            and all(isinstance(v, str) for v in value.values())):
+        note['faults'] = ['output JSON must be an object with exactly the string keys route and priority']
+        if isinstance(value, dict):
+            for field in ('route', 'priority'):
+                if field in value and isinstance(value[field], str):
+                    note[field]['actual'] = value[field]
+        return note
+    note['valid_json'] = note['format_ok'] = True
+    for field in ('route', 'priority'):
+        note[field]['actual'] = value[field]
+        note[field]['correct'] = value[field] == expected[field]
+    note['correct'] = note['route']['correct'] and note['priority']['correct']
+    faults = []
+    if not note['route']['correct']:
+        faults.append('route: model said %r but policy requires %r' % (note['route']['actual'], expected['route']))
+    if not note['priority']['correct']:
+        faults.append('priority: model said %r but policy requires %r' % (note['priority']['actual'], expected['priority']))
+    note['faults'] = faults
+    return note
+
+
+def grade(text, expected):
+    """Exact parsed-object equality: no substring credit, extra keys rejected."""
+    diag = diagnose_output(text, expected)
+    return diag['correct'], diag['format_ok']
+
+
+def asi_fault_notes(row, expected):
+    """Compact actionable side information for one failed training row."""
+    return diagnose_output(row['output'], expected).get('faults') or ['output failed schema or parse check']
 
 
 def compile_system_prompt(policy, candidate):
@@ -60,8 +99,10 @@ def compile_system_prompt(policy, candidate):
 
 
 class WorkflowEvaluator:
-    def __init__(self, provider, model, policy, reward):
+    def __init__(self, provider, model, policy, reward, max_tokens=160):
         self.provider, self.model, self.policy, self.reward = provider, model, policy, reward
+        # Thinking-style models (e.g. qwen3) may need more room to finish reasoning before the JSON answer.
+        self.max_tokens = max_tokens
 
     def evaluate(self, prompt, cases, seed=17):
         rows = []
@@ -71,7 +112,7 @@ class WorkflowEvaluator:
                 response = self.provider.chat([
                     ChatMessage('system', compile_system_prompt(self.policy, prompt)),
                     ChatMessage('user', values['start'] + '\n/no_think')
-                ], model=self.model, temperature=0, seed=seed, max_tokens=160)
+                ], model=self.model, temperature=0, seed=seed, max_tokens=self.max_tokens)
                 usage.update(input_tokens=response.input_tokens, output_tokens=response.output_tokens)
                 return response.content
             graph = WorkflowGraph.from_dsl(workflow_dsl(prompt))
@@ -101,8 +142,10 @@ def workflow_dsl(prompt):
 
 
 class FeedbackMutator:
-    def __init__(self, provider, model):
+    def __init__(self, provider, model, asi=False):
         self.provider, self.model = provider, model
+        # asi=True swaps all-or-nothing failure logs for per-component faults (GEPA ASI).
+        self.asi = asi
         self.log = []
 
     def mutate(self, parent, training, evaluation, policy, seed):
@@ -115,10 +158,32 @@ class FeedbackMutator:
 
     def _mutate(self, parent, training, evaluation, policy, seed):
         by_id = {r['id']: r for r in training}
-        failures = [{'input': by_id[r['id']]['text'], 'expected': r['expected'],
-                     'actual': final_text(r['output'])[:400]} for r in evaluation['rows'] if not r['correct']][:6]
+        failures = []
+        for row in evaluation['rows']:
+            if row['correct']:
+                continue
+            case = by_id[row['id']]
+            entry = {'input': case['text'], 'expected': row['expected'],
+                     'actual': final_text(row['output'])[:400]}
+            if self.asi:
+                entry['faults'] = asi_fault_notes(row, case['expected'])
+            failures.append(entry)
+            if len(failures) == 6:
+                break
+        if self.asi:
+            instruction = (
+                'Diagnose failures using the per-component "faults" notes: each names exactly which '
+                'sub-field (route, priority, or output format) is wrong and the required value. '
+                'Propose THREE distinct complete reusable classification procedures. Each must cover ALL '
+                'routes, priority exceptions, precedence, and exact JSON output. Fix ONLY the components '
+                'that failed on the parent; do not rewrite or regress components the parent already gets '
+                'right. Preserve policy, especially questions/resolved=P2. Do not include sample inputs or '
+                'memorize answers. Return JSON with diagnosis (string) and candidates (array of three '
+                'strings). Each candidate under 180 words.')
+        else:
+            instruction = 'Diagnose failures and propose THREE distinct complete reusable classification procedures. Each must cover ALL routes, priority exceptions, precedence, and output format, not merely one correction. Preserve policy, especially questions/resolved=P2. Do not include sample inputs or memorize answers. Return JSON with diagnosis (string) and candidates (array of three strings). Each candidate under 180 words.'
         request = {'policy': policy, 'parent': parent, 'training_failures': failures,
-                   'instruction': 'Diagnose failures and propose THREE distinct complete reusable classification procedures. Each must cover ALL routes, priority exceptions, precedence, and output format, not merely one correction. Preserve policy, especially questions/resolved=P2. Do not include sample inputs or memorize answers. Return JSON with diagnosis (string) and candidates (array of three strings). Each candidate under 180 words.'}
+                   'instruction': instruction}
         schema = {'type':'object','properties':{'diagnosis':{'type':'string'},'candidates':{'type':'array','items':{'type':'string'},'minItems':3,'maxItems':3}},'required':['diagnosis','candidates'],'additionalProperties':False}
         response = self.provider.chat([ChatMessage('user', json.dumps(request, ensure_ascii=False)+'\n/no_think')],
                                       model=self.model, temperature=0.6, seed=seed, max_tokens=1600, response_format={'type':'json_schema','json_schema':{'name':'mutation','schema':schema}})
