@@ -209,7 +209,7 @@ python evaluation/analyze_structure.py runs/my-structure
 python evaluation/confirm_frozen.py runs/my-structure
 ```
 
-运行产物包含候选谱系、逐条输出、Token 与延迟、验证决策和回滚 DSL，默认写入 `runs/` 或 `evaluation/results/`，不进入版本库。
+运行产物包含候选谱系、逐条输出、Token 与延迟、验证决策和回滚 DSL，默认写入 `runs/`，不进入版本库。
 
 ## HTTP API
 

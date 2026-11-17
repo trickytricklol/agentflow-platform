@@ -24,7 +24,7 @@ def key(genome):
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('source')
-    parser.add_argument('--output',required=True,help='JSON path, preferably evaluation/results/<run>/acquisition.json')
+    parser.add_argument('--output',required=True,help='JSON path, preferably runs/<run>/acquisition.json')
     parser.add_argument('--budget',type=int,default=4)
     args=parser.parse_args()
     source=ROOT/args.source
