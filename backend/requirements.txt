@@ -1,6 +1,3 @@
-# MVP uses only the Python standard library. Production profile can add:
-# fastapi
-# uvicorn
-# sqlalchemy
-# psycopg[binary]
-# Production PostgreSQL profile: uncomment psycopg[binary]
+# AgentFlow backend runtime. The core service uses only the Python standard library.
+# PostgreSQL deployments additionally install psycopg[binary]:
+# psycopg[binary]>=3.1

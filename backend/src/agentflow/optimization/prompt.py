@@ -20,7 +20,7 @@ class OptimizationExperiment:
 
 
 class PromptOptimizer:
-    """Replaceable optimization loop; MVP uses optimistic candidate sampling."""
+    """Replaceable optimization loop with optimistic candidate sampling."""
 
     def __init__(self, evaluator: Callable[[str], float]):
         self.evaluator = evaluator

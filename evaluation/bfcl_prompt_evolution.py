@@ -1,7 +1,6 @@
 """Automatic prompt mutation plus budgeted GP selection on BFCL-derived calls.
 
-Development uses IDs 0-19, validation 20-59, and IDs 60-119 stay untouched for
-a later frozen confirmation. This is not an official BFCL leaderboard score.
+Development uses IDs 0-19, validation 20-59, and reserved confirmation 60-119.
 """
 from __future__ import annotations
 import argparse

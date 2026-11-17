@@ -53,7 +53,7 @@ Handler = Any
 
 
 class WorkflowEngine:
-    """Deterministic first-version workflow engine built on a validated DAG."""
+    """Deterministic workflow engine built on a validated DAG."""
 
     def __init__(self, graph: WorkflowGraph, handlers: dict[str, Handler], max_retries: int = 0):
         self.graph = graph

@@ -1,4 +1,4 @@
-"""Summarize frozen topology experiments, including cost and failed candidates."""
+"""Summarize frozen topology runs, including cost and rejected candidates."""
 import json
 import sys
 from pathlib import Path

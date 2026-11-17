@@ -1,4 +1,4 @@
-"""GEPA-inspired bounded merge experiment over an already audited candidate archive."""
+"""Bounded Pareto merge over an evaluated candidate archive."""
 from __future__ import annotations
 import argparse
 import hashlib

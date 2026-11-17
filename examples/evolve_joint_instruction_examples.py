@@ -1,4 +1,4 @@
-"""MIPRO-inspired joint instruction/demo search with matched acquisition budgets."""
+"""Joint instruction/demo search with matched acquisition budgets."""
 from __future__ import annotations
 import argparse
 import hashlib

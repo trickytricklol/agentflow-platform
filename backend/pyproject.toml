@@ -4,7 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agentflow-backend"
-version = "0.1.0"
+version = "1.0.0"
+description = "Workflow orchestration and optimization service for AgentFlow"
 requires-python = ">=3.11"
 
 [tool.pytest.ini_options]

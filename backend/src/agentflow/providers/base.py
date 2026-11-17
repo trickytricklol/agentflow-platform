@@ -22,7 +22,7 @@ class ModelResponse:
 
 
 class ModelProvider:
-    """Provider contract. Concrete OpenAI-compatible clients can be plugged in later."""
+    """Provider contract implemented by Ollama, OpenAI-compatible and mock clients."""
 
     name = "base"
 

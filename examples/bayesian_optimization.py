@@ -36,7 +36,8 @@ def main():
     best = max(experiment.observations, key=lambda item: item.score)
     print("best_score=", round(best.score, 3))
     print("best_prompt=", best.prompt)
-    Path("evaluation/results/latest.json").write_text(json.dumps({
+    Path("runs").mkdir(parents=True, exist_ok=True)
+    Path("runs/bayesian-optimization.json").write_text(json.dumps({
         "model": "qwen3:1.7b",
         "cases": len(cases),
         "candidate_count": len(candidates),

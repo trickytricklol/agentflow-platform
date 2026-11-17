@@ -1,4 +1,4 @@
-"""Auditable local experiment: fixed vs feedback/random vs feedback/GP-EI."""
+"""Compare fixed instructions, feedback random search and feedback GP/EI."""
 from __future__ import annotations
 import argparse
 import hashlib
@@ -21,7 +21,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--seed', type=int, default=17)
     parser.add_argument('--rounds', type=int, default=2)
-    parser.add_argument('--output', default='evaluation/results/evolution-v1')
+    parser.add_argument('--output', default='runs/evolution')
     parser.add_argument('--embedding', choices=['tfidf','nomic'], default='tfidf')
     parser.add_argument('--failure-replay', action='store_true')
     parser.add_argument('--teacher-model', default='qwen3:1.7b')
@@ -36,7 +36,7 @@ def main():
     provider = OpenAICompatibleProvider('http://127.0.0.1:11434/v1', 'local-ollama', timeout=120)
     model = 'qwen3:1.7b'
     # Goal is translated into a restricted configuration, never executable code.
-    goal = 'Improve exact business-policy-compliant JSON routing. Success weight 1, token penalty 0. Freeze this reward throughout the experiment.'
+    goal = 'Improve exact business-policy-compliant JSON routing. Success weight 1, token penalty 0. Keep this reward fixed for the whole run.'
     response = provider.chat([ChatMessage('user', goal+' Return ONLY JSON with metric="exact_json", success_weight=1, token_penalty=0. /no_think')], model=model, temperature=0, max_tokens=300, response_format={'type':'json_object'})
     reward = RewardSpec.parse(json.loads(final_text(response.content)))
     evaluator = WorkflowEvaluator(provider, model, dataset['policy'], reward)

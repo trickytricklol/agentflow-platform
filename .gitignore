@@ -4,7 +4,8 @@ __pycache__/
 *.db
 workflows.json
 audit.jsonl
-evaluation/results/*.json
+runs/
+evaluation/results/
 evaluation/external/BFCL/
 .venv/
 env/

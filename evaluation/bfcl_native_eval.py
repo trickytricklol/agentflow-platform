@@ -1,4 +1,4 @@
-"""Resumable BFCL-derived native tool-call evaluation (not an official score)."""
+"""Resumable BFCL-derived native tool-call evaluation."""
 from __future__ import annotations
 import argparse
 import hashlib

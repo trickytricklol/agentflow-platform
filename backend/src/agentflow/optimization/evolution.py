@@ -29,7 +29,7 @@ class RewardSpec:
         if set(data) != {'metric', 'success_weight', 'token_penalty'}:
             raise ValueError('reward fields must match the allowlist')
         if data['metric'] != 'exact_json':
-            raise ValueError('only exact_json is supported in this experiment')
+            raise ValueError('only exact_json is supported')
         for key in ('success_weight', 'token_penalty'):
             value = data[key]
             if isinstance(value, bool) or not isinstance(value, (float, int)) or not math.isfinite(value) or not 0 <= value <= 1:
@@ -40,12 +40,11 @@ class RewardSpec:
 
 
 def diagnose_output(text, expected):
-    """Per-component attribution of a graded output (GEPA-style Actionable Side Information).
+    """Per-component attribution of a graded output.
 
-    The strict business reward stays all-or-nothing, but the reflective mutator is told *which*
+    The strict business reward stays all-or-nothing, but the reflective mutator is told which
     sub-field failed and the exact actual/expected values, so it can fix route without rewriting
-    priority or vice versa. Grounded in GEPA ASI (arXiv:2507.19457) and step-wise attribution
-    (AgentEvolver, arXiv:2511.10395).
+    priority or vice versa.
     """
     note = {'correct': False, 'valid_json': False, 'format_ok': False,
             'route': {'expected': expected['route'], 'actual': None, 'correct': False},
@@ -144,7 +143,7 @@ def workflow_dsl(prompt):
 class FeedbackMutator:
     def __init__(self, provider, model, asi=False):
         self.provider, self.model = provider, model
-        # asi=True swaps all-or-nothing failure logs for per-component faults (GEPA ASI).
+        # asi=True replaces all-or-nothing failure logs with per-component faults.
         self.asi = asi
         self.log = []
 

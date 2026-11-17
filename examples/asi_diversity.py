@@ -1,11 +1,11 @@
-"""Head-to-head A/B: legacy feedback/EI vs ASI feedback + diversity-aware acquisition.
+"""Compare legacy feedback/EI with per-component fault attribution and diversity-aware acquisition.
 
-Same dataset split, seed, executor model and teacher model for both arms, so the only
-differences are (1) whether the reflective mutator receives per-component faults
-(GEPA ASI) and (2) whether acquisition scalarizes EI with embedding novelty.
+Both arms share the dataset split, seed, executor model and teacher model, so the differences are
+(1) whether the mutator receives per-component faults and (2) whether acquisition scalarizes EI
+with embedding novelty.
 
-Run after `ollama pull qwen3:1.7b` (and optionally `nomic-embed-text`):
-    python examples/ab_asi_diversity.py --output evaluation/results/ab-asi-div-seed17
+Run after `ollama pull qwen3:1.7b`:
+    python examples/asi_diversity.py --output runs/asi-diversity
 """
 from __future__ import annotations
 import argparse
@@ -61,7 +61,7 @@ def main():
     ap.add_argument('--seed', type=int, default=17)
     ap.add_argument('--model', default='qwen3:1.7b')
     ap.add_argument('--teacher-model', default='qwen3:1.7b')
-    ap.add_argument('--output', default='evaluation/results/ab-asi-div-seed17')
+    ap.add_argument('--output', default='runs/asi-diversity')
     args = ap.parse_args()
     destination = ROOT / args.output
     destination.mkdir(parents=True, exist_ok=True)

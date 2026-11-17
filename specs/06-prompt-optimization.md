@@ -1,7 +1,21 @@
-# 子规格 06：Prompt 贝叶斯自适应优化
+# 子规格 06：Prompt 与工作流优化
 
-实现自然语言目标解析、奖励函数配置、评估数据集、Prompt Embedding、Gaussian Process/Bayesian Optimization、候选版本、实验停止条件和发布回滚。
+## 目标
 
-验收：给定同一数据集可比较候选 Prompt；每轮实验有指标和成本；最优版本可发布与回滚。MVP 允许使用可替换的 Embedding/优化器接口。
+实现奖励配置、评估数据集、候选生成、Embedding、Gaussian Process / Bayesian Optimization、版本比较与发布回滚。
 
-当前实现提供 `PromptOptimizer` 与 `OptimizationExperiment`。评估器通过函数注入，优化器记录每轮分数和当前最优版本；后续将把候选生成、Embedding 和 Gaussian Process 策略替换为正式实现。
+## 验收
+
+- 同一数据集上可比较多个候选。
+- 每轮评估记录指标、Token 与延迟。
+- 最优候选可发布，发布前保留回滚版本。
+
+## 实现
+
+- `OptimizationExperiment` / `PromptOptimizer`：候选评估与最优版本记录。
+- `GaussianProcessOptimizer`：RBF 核、观测噪声、Expected Improvement 与多样性权重。
+- `OllamaEmbeddingProvider` / `TfidfEmbedding`：神经向量与离线词法向量。
+- `FeedbackMutator`：失败反思生成候选指令。
+- `reward` 白名单：只接受 `exact_json` 指标与受限权重。
+
+详细算法与运行方式见 [docs/optimization.md](../docs/optimization.md)。

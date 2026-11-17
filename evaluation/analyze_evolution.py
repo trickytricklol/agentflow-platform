@@ -1,4 +1,4 @@
-"""Render evidence from saved experiments; no model calls or score editing."""
+"""Render evidence from saved optimization runs; no model calls or score editing."""
 import argparse
 import json
 import math

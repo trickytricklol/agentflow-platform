@@ -13,7 +13,7 @@ class EmbeddingProvider:
 
 
 class TfidfEmbedding(EmbeddingProvider):
-    """Dependency-free lexical embedding used for offline MVP experiments."""
+    """Dependency-free lexical embedding for offline use."""
 
     def __init__(self, corpus: list[str] | None = None):
         self.vocabulary: dict[str, int] = {}

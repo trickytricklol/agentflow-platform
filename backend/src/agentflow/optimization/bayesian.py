@@ -21,10 +21,9 @@ class BayesianExperiment:
 class GaussianProcessOptimizer:
     """Small dependency-free GP + Expected Improvement optimizer.
 
-    ``xi`` is the classic EI exploration margin; ``diversity_weight`` in [0,1] scalarizes normalized
-    EI with normalized embedding novelty (mean distance to already-observed prompts), the
-    diversity-aware selection of EvoTool (arXiv:2511.10395). Both default to 0 so existing
-    acquisition behavior is unchanged.
+    ``xi`` is the classic EI exploration margin; ``diversity_weight`` in [0,1] scalarizes
+    normalized EI with normalized embedding novelty (mean distance to already-observed
+    prompts). Both default to 0.
     """
 
     def __init__(self, embedding: EmbeddingProvider, noise: float = 0.05, length_scale: float = 1.0,

@@ -1,4 +1,4 @@
-"""GEPA-inspired instance-wise archive and safe, system-aware merge primitives."""
+"""Instance-wise candidate archive and safe merge primitives."""
 from __future__ import annotations
 
 import json

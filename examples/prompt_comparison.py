@@ -29,13 +29,13 @@ def summary(rows):
 
 
 def main():
-    cases = json.loads(Path("evaluation/prompt_ab.json").read_text(encoding="utf-8"))
+    cases = json.loads(Path("evaluation/prompt_candidates.json").read_text(encoding="utf-8"))
     provider = OpenAICompatibleProvider("http://127.0.0.1:11434/v1", "local-ollama")
     baseline = evaluate(provider, cases, "请回答下面的任务：{{task}}")
     optimized = evaluate(provider, cases, "你是企业级 Agent 工作流节点。请准确完成任务。先理解任务，但最终只输出标准答案，不要解释、不要 Markdown、不要输出思考过程：{{task}}")
     result = {"model": "qwen3:1.7b", "samples": len(cases), "baseline": summary(baseline), "optimized": summary(optimized), "details": {"baseline": baseline, "optimized": optimized}}
-    Path("evaluation/results").mkdir(parents=True, exist_ok=True)
-    Path("evaluation/results/prompt_ab_latest.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    Path("runs").mkdir(parents=True, exist_ok=True)
+    Path("runs/prompt-comparison.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps({key: result[key] for key in ("model", "samples", "baseline", "optimized")}, ensure_ascii=False, indent=2))
 
 

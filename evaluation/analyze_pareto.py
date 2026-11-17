@@ -1,4 +1,4 @@
-"""Render GEPA-inspired merge evidence without model calls."""
+"""Render Pareto merge results without model calls."""
 import json
 import sys
 from pathlib import Path

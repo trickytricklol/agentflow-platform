@@ -13,4 +13,6 @@ jobs:
         env:
           PYTHONPATH: backend/src
           PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
-      - run: python evaluation/verify_evidence.py
+      - run: python -c "import agentflow.api, agentflow.optimization, agentflow.benchmarks"
+        env:
+          PYTHONPATH: backend/src

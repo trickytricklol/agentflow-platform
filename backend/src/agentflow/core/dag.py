@@ -123,7 +123,7 @@ class WorkflowGraph:
 
 
 class DagExecutor:
-    """Small synchronous executor used as the first engine milestone."""
+    """Synchronous DAG executor used by simple pipelines and tests."""
 
     def __init__(self, graph: WorkflowGraph):
         self.graph = graph
