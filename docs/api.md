@@ -189,6 +189,18 @@ Content-Type: application/json
 
 `version` 省略时回滚到上一个发布版本。回滚会把目标 DSL 恢复为当前 DSL、以新版本号重新发布，并追加一条历史记录，因此回滚本身也可审计。目标版本不存在时返回 `400`。
 
+### 删除工作流
+
+```http
+DELETE /workflows/{id}
+```
+
+```json
+{"id": "7f6c2f5e-5b1a-4a0e-9a0e-2f6f9c8d1b3a", "deleted": true}
+```
+
+删除会同时移除持久化记录及其版本历史；工作流不存在时返回 `400`。
+
 ### 运行
 
 ```http

@@ -16,3 +16,24 @@ jobs:
       - run: python -c "import agentflow.api, agentflow.optimization, agentflow.benchmarks"
         env:
           PYTHONPATH: backend/src
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./backend/Dockerfile
+          load: true
+          tags: agentflow:ci
+      - name: Boot the image and check the console
+        run: |
+          docker run -d --name agentflow-ci -p 8080:8080 -e AGENTFLOW_DATA_DIR=/app/data agentflow:ci
+          for i in $(seq 1 20); do
+            curl -fsS http://127.0.0.1:8080/health && break
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8080/ | grep -q "AgentFlow 工作流编排器"
+          docker logs agentflow-ci
+          docker rm -f agentflow-ci

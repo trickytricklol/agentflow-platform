@@ -40,7 +40,7 @@ docker run --rm -p 8080:8080 \
   agentflow-api
 ```
 
-构建上下文为仓库根目录，镜像同时包含后端与控制台；容器内 `AGENTFLOW_HOST` 默认已设为 `0.0.0.0`。
+构建上下文为仓库根目录，镜像同时包含后端与控制台；容器内 `AGENTFLOW_HOST` 默认已设为 `0.0.0.0`。CI 会在每次推送时构建镜像并启动服务，检查 `/health` 与根路径控制台。
 
 ## Docker Compose
 
@@ -91,7 +91,7 @@ service = WorkflowService(PostgresWorkflowRepository("postgresql://user:pass@hos
 ## 可观测性
 
 - `GET /health` 返回服务状态与计数器快照，`GET /metrics` 只返回计数器。
-- `audit.jsonl` 逐行记录 `workflow.create`、`workflow.update`、`workflow.publish`、`workflow.rollback`、`workflow.run` 等动作，包含主体、资源、详情与 UTC 时间戳。
+- `audit.jsonl` 逐行记录 `workflow.create`、`workflow.update`、`workflow.delete`、`workflow.publish`、`workflow.rollback`、`workflow.run` 等动作，包含主体、资源、详情与 UTC 时间戳。
 - SSE 端点 `/workflows/{id}/run/stream` 在节点状态变化时实时输出 `event: node`，结束时输出 `event: complete`，异常时输出 `event: error`，可直接接入前端或日志采集。
 
 ## 反向代理

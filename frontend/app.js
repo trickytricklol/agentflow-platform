@@ -7,6 +7,7 @@ const output = document.querySelector('#output');
 const workflowName = document.querySelector('#workflow-name');
 const tokenEl = document.querySelector('#api-token');
 const runContext = document.querySelector('#run-context');
+const workflowList = document.querySelector('#workflow-list');
 const labels = { start: '开始节点', llm: '大模型节点', tool: '工具节点', agent: 'Agent 节点', end: '结束节点' };
 
 document.querySelectorAll('[data-type]').forEach(button => button.onclick = () => addNode(button.dataset.type));
@@ -16,6 +17,10 @@ document.querySelector('#save-workflow').onclick = () => saveWorkflow();
 document.querySelector('#publish-workflow').onclick = publishWorkflow;
 document.querySelector('#save').onclick = saveConfig;
 document.querySelector('#delete-node').onclick = deleteSelected;
+document.querySelector('#refresh-workflows').onclick = () => refreshWorkflows();
+document.querySelector('#open-workflow').onclick = openWorkflow;
+document.querySelector('#delete-workflow').onclick = deleteWorkflow;
+tokenEl.onchange = () => refreshWorkflows();
 document.addEventListener('keydown', event => {
   if ((event.key === 'Delete' || event.key === 'Backspace') && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) deleteSelected();
 });
@@ -168,11 +173,105 @@ async function saveWorkflow(silent = false) {
     state.workflowId = data.id;
     state.version = data.version;
     if (!silent) output.textContent = `已保存 ${data.id} · v${data.version}${data.published ? ' · 已发布' : ' · 草稿'}`;
+    await refreshWorkflows(true);
+    workflowList.value = data.id;
     return data;
   } catch (error) {
     if (!silent) output.textContent = `保存失败：${error.message}（请确认后端已启动）`;
     throw error;
   }
+}
+
+async function refreshWorkflows(quiet = false) {
+  try {
+    const items = await request('/workflows');
+    const current = state.workflowId;
+    workflowList.innerHTML = '';
+    items.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = `${item.name} · v${item.version}${item.published ? '' : ' · 草稿'}`;
+      workflowList.appendChild(option);
+    });
+    if (!items.length) {
+      const option = document.createElement('option');
+      option.textContent = '暂无工作流';
+      option.disabled = true;
+      workflowList.appendChild(option);
+    } else if (current && items.some(item => item.id === current)) {
+      workflowList.value = current;
+    }
+  } catch (error) {
+    workflowList.innerHTML = '<option disabled>工作流库不可用</option>';
+    if (!quiet) output.textContent = `工作流库读取失败：${error.message}`;
+  }
+}
+
+function loadRecord(record) {
+  state.nodes = (record.dsl.nodes || []).map((node, index) => ({
+    ...node,
+    x: 70 + (index % 4) * 170,
+    y: 60 + Math.floor(index / 4) * 120,
+    config: node.config || {},
+  }));
+  state.edges = (record.dsl.edges || []).map(edge => ({ ...edge }));
+  state.workflowId = record.id;
+  state.version = record.version;
+  state.selected = null;
+  state.linking = null;
+  state.next = state.nodes.reduce((max, node) => {
+    const match = /(\d+)$/.exec(node.id);
+    return match ? Math.max(max, Number(match[1])) : max;
+  }, 0) + 1;
+  workflowName.value = record.name;
+  runContext.value = '{}';
+  document.querySelector('#empty').hidden = false;
+  document.querySelector('#form').hidden = true;
+  render();
+}
+
+async function openWorkflow() {
+  const id = workflowList.value;
+  if (!id) return output.textContent = '请先选择工作流';
+  try {
+    const record = await request(`/workflows/${id}`);
+    loadRecord(record);
+    output.textContent = `已打开 ${record.name} · v${record.version}${record.published ? ' · 已发布' : ' · 草稿'}`;
+  } catch (error) {
+    output.textContent = `打开失败：${error.message}`;
+  }
+}
+
+async function deleteWorkflow() {
+  const id = workflowList.value || state.workflowId;
+  if (!id) return output.textContent = '请先选择工作流';
+  if (!confirm(`删除工作流 ${id}？该操作不可撤销。`)) return;
+  try {
+    await request(`/workflows/${id}`, { method: 'DELETE' });
+    if (state.workflowId === id) resetWorkflow();
+    await refreshWorkflows(true);
+    output.textContent = `已删除 ${id}`;
+  } catch (error) {
+    output.textContent = `删除失败：${error.message}`;
+  }
+}
+
+function resetWorkflow() {
+  state.nodes = [];
+  state.edges = [];
+  state.selected = null;
+  state.linking = null;
+  state.workflowId = null;
+  state.version = 0;
+  state.next = 1;
+  workflowName.value = '未命名工作流';
+  runContext.value = '{}';
+  document.querySelector('#empty').hidden = false;
+  document.querySelector('#form').hidden = true;
+  addNode('start');
+  addNode('end');
+  state.edges.push({ source: state.nodes[0].id, target: state.nodes[1].id, when: 'success' });
+  drawEdges();
 }
 
 async function publishWorkflow() {
@@ -181,6 +280,8 @@ async function publishWorkflow() {
     await saveWorkflow(true);
     const record = await request(`/workflows/${state.workflowId}/publish`, { method: 'POST' });
     state.version = record.version;
+    await refreshWorkflows(true);
+    workflowList.value = state.workflowId;
     output.textContent = `已发布 v${record.version}\n运行事件：\n`;
     const response = await fetch(`${API}/workflows/${state.workflowId}/run/stream`, {
       method: 'POST',
@@ -231,6 +332,5 @@ canvas.onclick = () => {
   output.textContent = `已选择 ${state.linking}，请点击目标节点建立连线`;
 };
 
-addNode('start'); addNode('end');
-state.edges.push({ source: state.nodes[0].id, target: state.nodes[1].id, when: 'success' });
-render();
+resetWorkflow();
+refreshWorkflows(true);

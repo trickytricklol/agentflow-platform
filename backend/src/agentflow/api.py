@@ -120,7 +120,7 @@ class ApiHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(204)
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET,POST,PUT,OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
         self.end_headers()
 
@@ -160,6 +160,21 @@ class ApiHandler(BaseHTTPRequestHandler):
         except PermissionError as exc:
             self._json(401, {"error": str(exc)})
         except (KeyError, ValueError, json.JSONDecodeError) as exc:
+            self._json(400, {"error": str(exc)})
+
+    def do_DELETE(self):
+        try:
+            principal = self._authenticate()
+            path = urlsplit(self.path).path
+            if path.startswith("/workflows/") and len(path.split("/")) == 3:
+                workflow_id = path.split("/")[2]
+                record = self.service.delete(workflow_id)
+                self.audit.record("workflow.delete", principal.subject, workflow_id, {"name": record.name})
+                return self._json(200, {"id": record.id, "deleted": True})
+            self._json(404, {"error": "not found"})
+        except PermissionError as exc:
+            self._json(401, {"error": str(exc)})
+        except (KeyError, ValueError) as exc:
             self._json(400, {"error": str(exc)})
 
     def do_POST(self):

@@ -137,6 +137,7 @@ update(id, name, dsl) ──▶ 重新校验 ──▶ 标记未发布
 publish(id)         ──▶ 重新校验 ──▶ 版本 +1 ──▶ 追加发布历史
 run(id, handlers)   ──▶ 必须已发布 ──▶ WorkflowEngine.run
 rollback(id, ver)   ──▶ 恢复目标 DSL ──▶ 以新版本重新发布
+delete(id)          ──▶ 移除记录与版本历史
 ```
 
 | Repository | 适用场景 | 持久化方式 |

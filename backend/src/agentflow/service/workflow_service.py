@@ -42,6 +42,9 @@ class WorkflowRepository:
     def list(self) -> list[WorkflowRecord]:
         return list(self._items.values())
 
+    def delete(self, workflow_id: str) -> bool:
+        return self._items.pop(workflow_id, None) is not None
+
 
 class JsonWorkflowRepository(WorkflowRepository):
     """Durable local repository for development and single-node deployments."""
@@ -53,9 +56,18 @@ class JsonWorkflowRepository(WorkflowRepository):
 
     def save(self, record: WorkflowRecord) -> WorkflowRecord:
         result = super().save(record)
+        self._flush()
+        return result
+
+    def delete(self, workflow_id: str) -> bool:
+        removed = super().delete(workflow_id)
+        if removed:
+            self._flush()
+        return removed
+
+    def _flush(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.path.write_text(json.dumps([serialize_record(item) for item in self._items.values()], ensure_ascii=False, indent=2), encoding="utf-8")
-        return result
 
     def _load(self) -> None:
         if not self.path.exists():
@@ -95,6 +107,13 @@ class SqliteWorkflowRepository(WorkflowRepository):
         self.connection.commit()
         return record
 
+    def delete(self, workflow_id: str) -> bool:
+        removed = super().delete(workflow_id)
+        if removed:
+            self.connection.execute("DELETE FROM workflows WHERE id = ?", (workflow_id,))
+            self.connection.commit()
+        return removed
+
 
 class PostgresWorkflowRepository(WorkflowRepository):
     """PostgreSQL adapter; requires optional psycopg at deployment time."""
@@ -123,6 +142,14 @@ class PostgresWorkflowRepository(WorkflowRepository):
             cursor.execute("INSERT INTO workflows (id, name, dsl, version, published, created_at, updated_at, history) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, dsl=EXCLUDED.dsl, version=EXCLUDED.version, published=EXCLUDED.published, updated_at=EXCLUDED.updated_at, history=EXCLUDED.history", (record.id, record.name, json.dumps(record.dsl, ensure_ascii=False), record.version, record.published, record.created_at, record.updated_at, json.dumps(record.history, ensure_ascii=False)))
         self.connection.commit()
         return record
+
+    def delete(self, workflow_id: str) -> bool:
+        removed = super().delete(workflow_id)
+        if removed:
+            with self.connection.cursor() as cursor:
+                cursor.execute("DELETE FROM workflows WHERE id = %s", (workflow_id,))
+            self.connection.commit()
+        return removed
 
 
 class WorkflowService:
@@ -188,6 +215,11 @@ class WorkflowService:
         if not record.published:
             raise ValueError("workflow is not published")
         return WorkflowEngine(WorkflowGraph.from_dsl(record.dsl), handlers).run(context, on_event=on_event)
+
+    def delete(self, workflow_id: str) -> WorkflowRecord:
+        record = self._required(workflow_id)
+        self.repository.delete(workflow_id)
+        return record
 
     def _required(self, workflow_id: str) -> WorkflowRecord:
         record = self.repository.get(workflow_id)

@@ -12,7 +12,7 @@ AgentFlow 把 LLM、工具与多 Agent 协作组织成可校验、可观测、�
 
 | 模块 | 能力 |
 |---|---|
-| 可视化编排 | 拖拽节点、连线、节点配置、DSL 校验与导出；保存、发布并查看运行事件 |
+| 可视化编排 | 工作流库、拖拽节点、连线、节点配置、DSL 校验与导出；保存、发布并查看运行事件 |
 | 工作流 DSL | `start` / `llm` / `tool` / `agent` / `end` 五类节点，`success` / `fail` / `always` 条件边 |
 | DSL 校验 | 重复节点、悬空边、多入口、不可达节点、循环依赖检测，错误定位到节点与边 |
 | 执行引擎 | Kahn 拓扑排序、分层并行、状态机、重试、超时、取消事件、逐节点事件流 |
@@ -20,7 +20,7 @@ AgentFlow 把 LLM、工具与多 Agent 协作组织成可校验、可观测、�
 | 工具中心 | 两阶段路由（词法召回 + 模型语义精排）、工具 Schema 参数校验、并行执行 |
 | Agent 协作 | Agent 注册、任务分发、线程池并行调度、结果汇聚与 fail-fast |
 | 工作流优化 | 严格奖励、失败反思变异、示例回放、神经嵌入、RBF-GP/EI、受限拓扑搜索、Pareto 合并、指令 × 示例联合搜索、安全约束、冻结确认与回滚 |
-| 版本管理 | 工作流创建、草稿更新、版本递增发布、运行、版本历史、回滚与 SSE 事件流 |
+| 版本管理 | 工作流创建、草稿更新、版本递增发布、运行、版本历史、回滚、删除与 SSE 事件流 |
 | 治理 | Bearer Token 鉴权、RBAC、审计日志、运行指标 |
 | 持久化 | Memory / JSON / SQLite / PostgreSQL 四套 Repository |
 | 交付 | 核心运行时仅依赖 Python 标准库，附 Dockerfile、docker-compose 与 GitHub Actions |
@@ -65,7 +65,7 @@ curl http://127.0.0.1:8080/health
 # {"status": "ok", "metrics": {}}
 ```
 
-浏览器访问 `http://127.0.0.1:8080` 即可使用内置控制台。控制台与 API 同源，支持画布编辑、节点配置、DSL 导出、保存/发布、版本回滚、运行上下文与实时事件流；开启鉴权后在右上角填写 API Token。
+浏览器访问 `http://127.0.0.1:8080` 即可使用内置控制台。控制台与 API 同源，支持工作流库（列出、打开、删除已保存工作流）、画布编辑、节点配置、DSL 导出、保存/发布、版本回滚、运行上下文与实时事件流；开启鉴权后在右上角填写 API Token。
 
 ## 定义并运行一个工作流
 
@@ -224,6 +224,7 @@ python evaluation/confirm_frozen.py runs/my-structure
 | `POST` | `/workflows` | 创建工作流（保存前执行 DSL 校验） |
 | `GET` | `/workflows/{id}` | 工作流详情与版本历史 |
 | `PUT` | `/workflows/{id}` | 更新名称或 DSL 草稿 |
+| `DELETE` | `/workflows/{id}` | 删除工作流 |
 | `POST` | `/workflows/{id}/publish` | 发布并递增版本 |
 | `POST` | `/workflows/{id}/rollback` | 回滚到指定版本 |
 | `POST` | `/workflows/{id}/run` | 同步运行，返回节点状态与事件 |
@@ -255,7 +256,7 @@ $env:PYTEST_DISABLE_PLUGIN_AUTOLOAD="1"
 python -m pytest backend/tests -q
 ```
 
-测试覆盖 DSL 校验、拓扑与并行调度、分支与重试、五类节点、Provider、工具路由、Agent 调度、版本发布与回滚、四类持久化、实时事件监听、鉴权审计与优化算法。GitHub Actions 在 Python 3.11 上执行同一套测试。
+测试覆盖 DSL 校验、拓扑与并行调度、分支与重试、五类节点、Provider、工具路由、Agent 调度、版本发布与回滚、工作流删除、四类持久化、实时事件监听、鉴权审计与优化算法。GitHub Actions 在 Python 3.11 上执行同一套测试，并构建容器镜像、启动服务校验控制台与健康检查。
 
 ## 目录结构
 
@@ -288,3 +289,7 @@ agentflow-platform/
 - [模型配置](docs/models.md)
 - [工作流优化](docs/optimization.md)
 - [部署与运维](docs/deployment.md)
+
+## License
+
+[MIT](LICENSE)

@@ -12,6 +12,7 @@
 | PostgreSQL 持久化 | 已实现（需 `psycopg`） | 可选依赖测试 |
 | HTTP API、内置控制台与 SSE | 已实现 | 端到端运行校验 |
 | 版本递增发布、历史与回滚 | 已实现 | `test_service.py`、`test_persistence.py` |
+| 工作流库列出、打开与删除 | 已实现 | `test_service.py`、`test_sqlite.py`、浏览器验收 |
 | 鉴权 / RBAC / 审计 / 指标 | 已实现 | `test_security.py` |
 | 可视化画布 | 已实现 | 浏览器验收 |
 | RBF GP / EI 有限预算选样 | 已实现 | `test_evolution.py` |
@@ -19,7 +20,7 @@
 | 失败反思、候选变异、示例回放 | 已实现 | `test_evolution.py` |
 | 单节点 / 字段分工 / 复核结构搜索 | 已实现 | `test_structural.py` |
 | 验证门槛、冻结确认与回滚 | 已实现 | `test_structural.py`、`test_acceptance.py` |
-| Pareto 合并与联合示例搜索 | 已实现 | `test_pareto.py`、`test_demonstrations.py` |
+| Pareto 合并与联合示例搜索 | 已实现 | `test_pareto.py` |
 | 安全约束与切片门控 | 已实现 | `test_safe_bo.py` |
 | 主从 Agent 调度 | 已实现 | `test_agents.py` |
 | SSE 实时事件流 | 已实现 | 端到端运行校验 |

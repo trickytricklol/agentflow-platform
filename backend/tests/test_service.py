@@ -44,3 +44,13 @@ def test_update_publish_and_rollback_versions():
 
     target = service.rollback(record.id, version=2)
     assert target.dsl == changed and target.version == 4
+
+
+def test_delete_removes_workflow():
+    service = WorkflowService()
+    record = service.create("temporary", DSL)
+    assert service.delete(record.id).id == record.id
+    assert service.repository.get(record.id) is None
+    assert service.repository.list() == []
+    with pytest.raises(KeyError, match="workflow not found"):
+        service.delete(record.id)
