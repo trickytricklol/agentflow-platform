@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import hmac
 
 
 @dataclass(frozen=True)
@@ -19,7 +20,11 @@ class AuthConfig:
             return Principal("development", {"admin"})
         if not authorization or not authorization.startswith("Bearer "):
             raise PermissionError("Bearer token required")
-        principal = self.tokens.get(authorization[7:])
+        supplied = authorization[7:]
+        principal = None
+        for token, candidate in self.tokens.items():
+            if hmac.compare_digest(token, supplied):
+                principal = candidate
         if principal is None:
             raise PermissionError("invalid token")
         return principal

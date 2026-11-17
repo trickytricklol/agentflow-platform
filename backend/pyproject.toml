@@ -7,6 +7,13 @@ name = "agentflow-backend"
 version = "1.0.0"
 description = "Workflow orchestration and optimization service for AgentFlow"
 requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Shurong Dong" }]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

@@ -8,6 +8,7 @@ const workflowName = document.querySelector('#workflow-name');
 const tokenEl = document.querySelector('#api-token');
 const runContext = document.querySelector('#run-context');
 const workflowList = document.querySelector('#workflow-list');
+const versionList = document.querySelector('#version-list');
 const labels = { start: '开始节点', llm: '大模型节点', tool: '工具节点', agent: 'Agent 节点', end: '结束节点' };
 
 document.querySelectorAll('[data-type]').forEach(button => button.onclick = () => addNode(button.dataset.type));
@@ -20,6 +21,8 @@ document.querySelector('#delete-node').onclick = deleteSelected;
 document.querySelector('#refresh-workflows').onclick = () => refreshWorkflows();
 document.querySelector('#open-workflow').onclick = openWorkflow;
 document.querySelector('#delete-workflow').onclick = deleteWorkflow;
+document.querySelector('#refresh-versions').onclick = refreshVersions;
+document.querySelector('#rollback-workflow').onclick = rollbackWorkflow;
 tokenEl.onchange = () => refreshWorkflows();
 document.addEventListener('keydown', event => {
   if ((event.key === 'Delete' || event.key === 'Backspace') && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) deleteSelected();
@@ -173,6 +176,7 @@ async function saveWorkflow(silent = false) {
     state.workflowId = data.id;
     state.version = data.version;
     if (!silent) output.textContent = `已保存 ${data.id} · v${data.version}${data.published ? ' · 已发布' : ' · 草稿'}`;
+    updateVersions(data);
     await refreshWorkflows(true);
     workflowList.value = data.id;
     return data;
@@ -207,6 +211,56 @@ async function refreshWorkflows(quiet = false) {
   }
 }
 
+function updateVersions(record) {
+  versionList.innerHTML = '';
+  const history = (record && record.history) || [];
+  if (!history.length) {
+    const option = document.createElement('option');
+    option.textContent = '暂无发布版本';
+    option.disabled = true;
+    versionList.appendChild(option);
+    return;
+  }
+  history.slice().reverse().forEach(entry => {
+    const option = document.createElement('option');
+    option.value = entry.version;
+    option.textContent = `v${entry.version} · ${String(entry.published_at || '').replace('T', ' ').slice(0, 19)}`;
+    versionList.appendChild(option);
+  });
+  if (history.some(entry => entry.version === record.version)) versionList.value = record.version;
+}
+
+async function refreshVersions() {
+  if (!state.workflowId) return output.textContent = '当前没有可刷新的工作流';
+  try {
+    const record = await request(`/workflows/${state.workflowId}`);
+    updateVersions(record);
+    output.textContent = `已加载 ${record.name} 的版本历史`;
+  } catch (error) {
+    output.textContent = `版本读取失败：${error.message}`;
+  }
+}
+
+async function rollbackWorkflow() {
+  if (!state.workflowId) return output.textContent = '请先保存或打开一个工作流';
+  const version = Number(versionList.value);
+  if (!version) return output.textContent = '请选择一个发布版本';
+  if (!confirm(`回滚到 v${version}？当前草稿会被该版本覆盖。`)) return;
+  try {
+    const record = await request(`/workflows/${state.workflowId}/rollback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ version }),
+    });
+    loadRecord(record);
+    await refreshWorkflows(true);
+    workflowList.value = record.id;
+    output.textContent = `已回滚到 v${version}，当前发布版本 v${record.version}`;
+  } catch (error) {
+    output.textContent = `回滚失败：${error.message}`;
+  }
+}
+
 function loadRecord(record) {
   state.nodes = (record.dsl.nodes || []).map((node, index) => ({
     ...node,
@@ -228,6 +282,7 @@ function loadRecord(record) {
   document.querySelector('#empty').hidden = false;
   document.querySelector('#form').hidden = true;
   render();
+  updateVersions(record);
 }
 
 async function openWorkflow() {
@@ -268,6 +323,7 @@ function resetWorkflow() {
   runContext.value = '{}';
   document.querySelector('#empty').hidden = false;
   document.querySelector('#form').hidden = true;
+  updateVersions(null);
   addNode('start');
   addNode('end');
   state.edges.push({ source: state.nodes[0].id, target: state.nodes[1].id, when: 'success' });
@@ -280,6 +336,7 @@ async function publishWorkflow() {
     await saveWorkflow(true);
     const record = await request(`/workflows/${state.workflowId}/publish`, { method: 'POST' });
     state.version = record.version;
+    updateVersions(record);
     await refreshWorkflows(true);
     workflowList.value = state.workflowId;
     output.textContent = `已发布 v${record.version}\n运行事件：\n`;

@@ -2,6 +2,9 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 *.db
+.env
+.env.*
+!.env.example
 workflows.json
 audit.jsonl
 runs/

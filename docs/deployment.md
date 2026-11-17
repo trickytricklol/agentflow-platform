@@ -21,7 +21,9 @@ PYTHONPATH=backend/src python -m agentflow.api
 | `AGENTFLOW_PORT` | `8080` | 监听端口 |
 | `AGENTFLOW_DATA_DIR` | `.` | 工作流与审计文件目录 |
 | `AGENTFLOW_AUTH_ENABLED` | `0` | 设为 `1` 开启 Bearer Token 鉴权 |
-| `AGENTFLOW_API_TOKEN` | `dev-token` | 鉴权 Token，生产环境必须替换 |
+| `AGENTFLOW_API_TOKEN` | 空 | 鉴权 Token；`AGENTFLOW_AUTH_ENABLED=1` 时必填，缺失则拒绝启动 |
+| `AGENTFLOW_MAX_BODY_BYTES` | `1048576` | 单次请求体上限（字节），超限返回 `413` |
+| `AGENTFLOW_CORS_ORIGINS` | `*` | 允许的跨域来源，逗号分隔；生产环境应改为控制台域名 |
 | `AGENTFLOW_OLLAMA_URL` | 空 | 设置后 API 使用原生 Ollama Provider 执行 `llm` 节点 |
 | `AGENTFLOW_OPENAI_BASE_URL` | 空 | 设置后 API 使用 OpenAI 兼容 Provider |
 | `AGENTFLOW_OPENAI_API_KEY` | 空 | OpenAI 兼容服务的 API Key |
@@ -46,10 +48,12 @@ docker run --rm -p 8080:8080 \
 
 ```bash
 cd deploy
+cp .env.example .env
+# 在 .env 中设置 AGENTFLOW_API_TOKEN 与 AGENTFLOW_CORS_ORIGINS
 docker compose up --build
 ```
 
-`deploy/docker-compose.yml` 暴露 `8080` 端口，并把命名卷 `agentflow-data` 挂载到 `/app/data`，工作流与审计日志随容器重建保留。
+`deploy/docker-compose.yml` 暴露 `8080` 端口，并把命名卷 `agentflow-data` 挂载到 `/app/data`，工作流与审计日志随容器重建保留。Compose 默认开启鉴权并要求显式提供 Token；容器以非 root 用户运行，根文件系统只读，启用 `no-new-privileges`、`init` 与 `/health` 健康检查。
 
 接入宿主机上的 Ollama 时，在 compose 中增加：
 
@@ -66,7 +70,7 @@ Linux 环境可将 `host.docker.internal` 替换为宿主机网桥地址，或�
 AGENTFLOW_AUTH_ENABLED=1 AGENTFLOW_API_TOKEN=change-me python -m agentflow.api
 ```
 
-所有请求需携带 `Authorization: Bearer change-me`。Token 与主体、角色的映射在 `AuthConfig.tokens` 中维护，可按部署需要扩展为多 Token。
+除 `/`、静态资源、`/health` 与 `/ready` 外的请求需携带 `Authorization: Bearer change-me`。开启鉴权但未提供 `AGENTFLOW_API_TOKEN` 时服务拒绝启动，不再使用固定默认 Token。Token 与主体、角色的映射在 `AuthConfig.tokens` 中维护，可按部署需要扩展为多 Token。
 
 ## 存储
 
@@ -90,9 +94,9 @@ service = WorkflowService(PostgresWorkflowRepository("postgresql://user:pass@hos
 
 ## 可观测性
 
-- `GET /health` 返回服务状态与计数器快照，`GET /metrics` 只返回计数器。
+- `GET /health` 与 `GET /ready` 公开，分别用于存活与就绪探针；`GET /metrics` 受鉴权保护并返回计数器。
 - `audit.jsonl` 逐行记录 `workflow.create`、`workflow.update`、`workflow.delete`、`workflow.publish`、`workflow.rollback`、`workflow.run` 等动作，包含主体、资源、详情与 UTC 时间戳。
-- SSE 端点 `/workflows/{id}/run/stream` 在节点状态变化时实时输出 `event: node`，结束时输出 `event: complete`，异常时输出 `event: error`，可直接接入前端或日志采集。
+- SSE 端点 `/workflows/{id}/run/stream` 在节点状态变化时实时输出 `event: node`，每 15 秒发送 `: ping` 心跳；客户端断开时取消后续节点。结束输出 `event: complete`，异常输出 `event: error`。
 
 ## 反向代理
 
@@ -113,5 +117,5 @@ location / {
 1. `/health` 返回 `status: ok`，根路径返回控制台页面。
 2. 已注册至少一个可用模型，或配置了 `AGENTFLOW_OLLAMA_URL` / `AGENTFLOW_OPENAI_BASE_URL`。
 3. 工作流保存前通过 DSL 校验，运行前已发布。
-4. 生产环境已开启鉴权并替换默认 Token。
+4. 生产环境已开启鉴权并显式设置强随机 `AGENTFLOW_API_TOKEN`，`AGENTFLOW_CORS_ORIGINS` 已收敛到实际域名。
 5. `AGENTFLOW_DATA_DIR` 指向持久化卷，备份策略覆盖 `workflows.json` 与 `audit.jsonl`。

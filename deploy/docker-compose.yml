@@ -3,13 +3,28 @@ services:
     build:
       context: ..
       dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    init: true
     ports:
       - "8080:8080"
     environment:
-      AGENTFLOW_AUTH_ENABLED: "0"
+      AGENTFLOW_AUTH_ENABLED: "${AGENTFLOW_AUTH_ENABLED:-1}"
+      AGENTFLOW_API_TOKEN: "${AGENTFLOW_API_TOKEN:?set AGENTFLOW_API_TOKEN before starting}"
+      AGENTFLOW_CORS_ORIGINS: "${AGENTFLOW_CORS_ORIGINS:-*}"
       AGENTFLOW_HOST: "0.0.0.0"
       AGENTFLOW_DATA_DIR: "/app/data"
     volumes:
       - agentflow-data:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 volumes:
   agentflow-data:

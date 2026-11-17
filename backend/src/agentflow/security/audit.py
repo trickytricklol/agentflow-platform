@@ -5,6 +5,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+from threading import RLock
 from typing import Any
 
 
@@ -21,23 +22,28 @@ class AuditLogger:
     def __init__(self, path: str | Path | None = None):
         self.path = Path(path) if path else None
         self.events: list[AuditEvent] = []
+        self._lock = RLock()
 
     def record(self, action: str, subject: str, resource: str, detail: dict[str, Any] | None = None) -> AuditEvent:
         event = AuditEvent(action, subject, resource, detail or {}, datetime.now(timezone.utc).isoformat())
-        self.events.append(event)
-        if self.path:
-            self.path.parent.mkdir(parents=True, exist_ok=True)
-            with self.path.open("a", encoding="utf-8") as stream:
-                stream.write(json.dumps(asdict(event), ensure_ascii=False) + "\n")
+        with self._lock:
+            self.events.append(event)
+            if self.path:
+                self.path.parent.mkdir(parents=True, exist_ok=True)
+                with self.path.open("a", encoding="utf-8") as stream:
+                    stream.write(json.dumps(asdict(event), ensure_ascii=False) + "\n")
         return event
 
 
 class Metrics:
     def __init__(self):
         self.counters = Counter()
+        self._lock = RLock()
 
     def increment(self, name: str, amount: int = 1) -> None:
-        self.counters[name] += amount
+        with self._lock:
+            self.counters[name] += amount
 
     def snapshot(self) -> dict[str, int]:
-        return dict(self.counters)
+        with self._lock:
+            return dict(self.counters)

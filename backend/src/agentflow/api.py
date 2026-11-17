@@ -5,11 +5,11 @@ import mimetypes
 import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from threading import Lock
+from threading import Event, Lock, Thread
 from typing import Any
 from urllib.parse import urlsplit
 
-from agentflow.service.workflow_service import JsonWorkflowRepository, WorkflowService, serialize_record
+from agentflow.service.workflow_service import JsonWorkflowRepository, WorkflowService, serialize_record, serialize_summary
 from agentflow.security import AuditLogger, AuthConfig, Metrics, Principal
 from agentflow.providers import ModelConfig, ModelRegistry, MockProvider, OllamaProvider, OpenAICompatibleProvider, ModelProvider
 from agentflow.nodes import AgentNode, LLMNode, ToolNode
@@ -35,6 +35,22 @@ def locate_frontend() -> Path | None:
 
 FRONTEND_DIR = locate_frontend()
 STATIC_FILES = {"index.html", "app.js", "styles.css"}
+MAX_BODY_BYTES = int(os.getenv("AGENTFLOW_MAX_BODY_BYTES", "1048576"))
+CORS_ORIGINS = [item.strip() for item in os.getenv("AGENTFLOW_CORS_ORIGINS", "*").split(",") if item.strip()]
+
+
+class ApiError(Exception):
+    def __init__(self, status: int, message: str):
+        super().__init__(message)
+        self.status = status
+
+
+def build_auth() -> AuthConfig:
+    enabled = os.getenv("AGENTFLOW_AUTH_ENABLED", "0") == "1"
+    token = os.getenv("AGENTFLOW_API_TOKEN", "")
+    if enabled and not token:
+        raise RuntimeError("AGENTFLOW_API_TOKEN is required when authentication is enabled")
+    return AuthConfig(enabled, {token: Principal("api", {"admin"})} if token else {})
 
 
 class RoutingProvider(ModelProvider):
@@ -55,9 +71,10 @@ class RoutingProvider(ModelProvider):
 
 
 class ApiHandler(BaseHTTPRequestHandler):
+    timeout = 60
     data_dir = os.getenv("AGENTFLOW_DATA_DIR", ".")
     service = WorkflowService(JsonWorkflowRepository(os.path.join(data_dir, "workflows.json")))
-    auth = AuthConfig(os.getenv("AGENTFLOW_AUTH_ENABLED", "0") == "1", {os.getenv("AGENTFLOW_API_TOKEN", "dev-token"): Principal("api", {"admin"})})
+    auth = build_auth()
     audit = AuditLogger(os.path.join(data_dir, "audit.jsonl"))
     metrics = Metrics()
     models = ModelRegistry()
@@ -78,13 +95,30 @@ class ApiHandler(BaseHTTPRequestHandler):
     def _authenticate(self):
         return self.auth.authenticate(self.headers.get("Authorization"))
 
+    def _cors_origin(self) -> str | None:
+        if "*" in CORS_ORIGINS:
+            return "*"
+        origin = self.headers.get("Origin")
+        return origin if origin in CORS_ORIGINS else None
+
+    def _security_headers(self, content_type: str | None = None) -> None:
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("Referrer-Policy", "no-referrer")
+        if content_type and content_type.startswith("text/html"):
+            self.send_header("Content-Security-Policy", "default-src 'self'; connect-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; base-uri 'none'; frame-ancestors 'none'")
+
     def _json(self, status: int, payload: Any) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        self._response_started = True
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        origin = self._cors_origin()
+        if origin:
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
         self.send_header("Content-Length", str(len(body)))
+        self._security_headers("application/json")
         self.end_headers()
         self.wfile.write(body)
 
@@ -102,49 +136,86 @@ class ApiHandler(BaseHTTPRequestHandler):
         content_type = mimetypes.guess_type(name)[0] or "application/octet-stream"
         if content_type.startswith("text/") or name.endswith(".js"):
             content_type += "; charset=utf-8"
+        self._response_started = True
         self.send_response(200)
         self.send_header("Content-Type", content_type)
         self.send_header("Cache-Control", "no-cache")
         self.send_header("Content-Length", str(len(body)))
+        self._security_headers(content_type)
         self.end_headers()
         self.wfile.write(body)
         return True
 
     def _payload(self) -> dict[str, Any]:
-        length = int(self.headers.get("Content-Length", "0"))
-        payload = json.loads(self.rfile.read(length) or b"{}")
+        if self.headers.get("Transfer-Encoding"):
+            raise ApiError(411, "Content-Length is required")
+        raw_length = self.headers.get("Content-Length")
+        if raw_length is None:
+            length = 0
+        else:
+            try:
+                length = int(raw_length)
+            except ValueError as exc:
+                raise ApiError(400, "invalid Content-Length") from exc
+        if length < 0:
+            raise ApiError(400, "invalid Content-Length")
+        if length > MAX_BODY_BYTES:
+            raise ApiError(413, f"request body exceeds {MAX_BODY_BYTES} bytes")
+        raw = self.rfile.read(length) if length else b"{}"
+        try:
+            payload = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise ApiError(400, "request body must be valid JSON") from exc
         if not isinstance(payload, dict):
-            raise ValueError("JSON body must be an object")
+            raise ApiError(400, "JSON body must be an object")
         return payload
 
     def do_OPTIONS(self):
         self.send_response(204)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        origin = self._cors_origin()
+        if origin:
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
+            self.send_header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+            self.send_header("Access-Control-Max-Age", "600")
+        self.send_header("Content-Length", "0")
         self.end_headers()
 
     def do_GET(self):
         if self._serve_static():
             return
-        try:
-            self._authenticate()
-        except PermissionError as exc:
-            return self._json(401, {"error": str(exc)})
         path = urlsplit(self.path).path
-        if path == "/health":
-            return self._json(200, {"status": "ok", "metrics": self.metrics.snapshot()})
-        if path == "/metrics":
-            return self._json(200, self.metrics.snapshot())
-        if path == "/models":
-            return self._json(200, self.models.list())
-        if path == "/workflows":
-            return self._json(200, [serialize_record(item) for item in self.service.repository.list()])
-        if path.startswith("/workflows/"):
-            workflow_id = path.split("/")[2]
-            record = self.service.repository.get(workflow_id)
-            return self._json(200, serialize_record(record)) if record else self._json(404, {"error": "workflow not found"})
-        self._json(404, {"error": "not found"})
+        try:
+            if path == "/health":
+                return self._json(200, {"status": "ok", "service": "agentflow", "metrics": self.metrics.snapshot()})
+            if path == "/ready":
+                try:
+                    self.service.repository.list()
+                    writable = os.access(self.data_dir, os.W_OK)
+                except Exception:
+                    writable = False
+                return self._json(200 if writable else 503, {"status": "ready" if writable else "not-ready"})
+            self._authenticate()
+            if path == "/metrics":
+                return self._json(200, self.metrics.snapshot())
+            if path == "/models":
+                return self._json(200, self.models.list())
+            if path == "/workflows":
+                return self._json(200, [serialize_summary(item) for item in self.service.repository.list()])
+            if path.startswith("/workflows/") and len(path.split("/")) == 3:
+                workflow_id = path.split("/")[2]
+                record = self.service.repository.get(workflow_id)
+                return self._json(200, serialize_record(record)) if record else self._json(404, {"error": "workflow not found"})
+            self._json(404, {"error": "not found"})
+        except PermissionError as exc:
+            self._json(401, {"error": str(exc)})
+        except ApiError as exc:
+            self._json(exc.status, {"error": str(exc)})
+        except Exception as exc:
+            self.log_error("unhandled GET error: %s", exc)
+            if not getattr(self, "_response_started", False):
+                self._json(500, {"error": "internal server error"})
 
     def do_PUT(self):
         try:
@@ -159,8 +230,14 @@ class ApiHandler(BaseHTTPRequestHandler):
             self._json(404, {"error": "not found"})
         except PermissionError as exc:
             self._json(401, {"error": str(exc)})
-        except (KeyError, ValueError, json.JSONDecodeError) as exc:
+        except ApiError as exc:
+            self._json(exc.status, {"error": str(exc)})
+        except (KeyError, ValueError) as exc:
             self._json(400, {"error": str(exc)})
+        except Exception as exc:
+            self.log_error("unhandled PUT error: %s", exc)
+            if not getattr(self, "_response_started", False):
+                self._json(500, {"error": "internal server error"})
 
     def do_DELETE(self):
         try:
@@ -174,8 +251,14 @@ class ApiHandler(BaseHTTPRequestHandler):
             self._json(404, {"error": "not found"})
         except PermissionError as exc:
             self._json(401, {"error": str(exc)})
+        except ApiError as exc:
+            self._json(exc.status, {"error": str(exc)})
         except (KeyError, ValueError) as exc:
             self._json(400, {"error": str(exc)})
+        except Exception as exc:
+            self.log_error("unhandled DELETE error: %s", exc)
+            if not getattr(self, "_response_started", False):
+                self._json(500, {"error": "internal server error"})
 
     def do_POST(self):
         try:
@@ -220,47 +303,85 @@ class ApiHandler(BaseHTTPRequestHandler):
                     return self._json(404, {"error": "workflow not found"})
                 if not record.published:
                     return self._json(400, {"error": "workflow is not published"})
+                context = payload.get("context") or {}
+                if not isinstance(context, dict):
+                    raise ValueError("context must be a JSON object")
+                self._response_started = True
                 self.send_response(200)
                 self.send_header("Content-Type", "text/event-stream; charset=utf-8")
                 self.send_header("Cache-Control", "no-cache")
-                self.send_header("Access-Control-Allow-Origin", "*")
+                origin = self._cors_origin()
+                if origin:
+                    self.send_header("Access-Control-Allow-Origin", origin)
+                    self.send_header("Vary", "Origin")
+                self._security_headers("text/event-stream")
                 self.end_headers()
                 write_lock = Lock()
+                cancel = Event()
+                finished = Event()
 
-                def emit(event):
-                    data = {"node_id": event.node_id, "status": event.status.value, "attempt": event.attempt, "error": event.error}
+                def write_frame(name: str, data: Any) -> bool:
+                    if name == "ping":
+                        frame = ": ping\n\n"
+                    else:
+                        frame = f"event: {name}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
                     with write_lock:
                         try:
-                            self.wfile.write(("event: node\ndata: " + json.dumps(data, ensure_ascii=False) + "\n\n").encode("utf-8"))
+                            self.wfile.write(frame.encode("utf-8"))
                             self.wfile.flush()
-                        except (BrokenPipeError, ConnectionResetError):
-                            pass
+                            return True
+                        except (OSError, ValueError):
+                            return False
 
+                def emit(event):
+                    if not write_frame("node", {"node_id": event.node_id, "status": event.status.value, "attempt": event.attempt, "error": event.error}):
+                        cancel.set()
+
+                def heartbeat():
+                    while not finished.wait(15):
+                        if not write_frame("ping", None):
+                            cancel.set()
+                            return
+
+                beat = Thread(target=heartbeat, daemon=True)
+                beat.start()
+                status = "ERROR"
+                error: str | None = None
                 try:
-                    result = self.service.run(workflow_id, self._handlers(payload.get("context", {})), payload.get("context", {}), on_event=emit)
-                    frame = {"status": result.status.value}
-                    name = "complete"
+                    result = self.service.run(workflow_id, self._handlers(context), context, on_event=emit, cancel_event=cancel)
+                    status = result.status.value
                 except Exception as exc:
-                    frame = {"status": "ERROR", "error": str(exc)}
-                    name = "error"
-                with write_lock:
-                    try:
-                        self.wfile.write((f"event: {name}\ndata: " + json.dumps(frame, ensure_ascii=False) + "\n\n").encode("utf-8"))
-                        self.wfile.flush()
-                    except (BrokenPipeError, ConnectionResetError):
-                        pass
+                    error = str(exc)
+                finally:
+                    finished.set()
+                    beat.join(timeout=1)
+                if error is None:
+                    write_frame("complete", {"status": status, "cancelled": cancel.is_set()})
+                else:
+                    write_frame("error", {"status": "ERROR", "error": error})
+                self.metrics.increment("workflow_runs")
+                self.audit.record("workflow.run", principal.subject, workflow_id, {"status": status, "stream": True})
                 return
             if path.startswith("/workflows/") and path.endswith("/run"):
                 workflow_id = path.split("/")[2]
-                result = self.service.run(workflow_id, self._handlers(payload.get("context", {})), payload.get("context", {}))
+                context = payload.get("context") or {}
+                if not isinstance(context, dict):
+                    raise ValueError("context must be a JSON object")
+                result = self.service.run(workflow_id, self._handlers(context), context)
                 self.metrics.increment("workflow_runs")
                 self.audit.record("workflow.run", principal.subject, workflow_id, {"status": result.status.value})
                 return self._json(200, {"status": result.status.value, "nodes": {key: {"status": value.status.value, "value": value.value, "error": value.error} for key, value in result.nodes.items()}, "events": [{"node_id": event.node_id, "status": event.status.value, "attempt": event.attempt, "error": event.error} for event in result.events]})
             self._json(404, {"error": "not found"})
         except PermissionError as exc:
             self._json(401, {"error": str(exc)})
-        except (KeyError, ValueError, json.JSONDecodeError) as exc:
+        except ApiError as exc:
+            self._json(exc.status, {"error": str(exc)})
+        except (KeyError, ValueError) as exc:
             self._json(400, {"error": str(exc)})
+        except Exception as exc:
+            self.log_error("unhandled POST error: %s", exc)
+            if not getattr(self, "_response_started", False):
+                self._json(500, {"error": "internal server error"})
 
 
 def serve(host: str | None = None, port: int | None = None) -> None:

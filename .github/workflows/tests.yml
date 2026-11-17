@@ -29,11 +29,19 @@ jobs:
           tags: agentflow:ci
       - name: Boot the image and check the console
         run: |
-          docker run -d --name agentflow-ci -p 8080:8080 -e AGENTFLOW_DATA_DIR=/app/data agentflow:ci
+          docker run -d --name agentflow-ci -p 8080:8080 \
+            -e AGENTFLOW_DATA_DIR=/app/data \
+            -e AGENTFLOW_AUTH_ENABLED=1 \
+            -e AGENTFLOW_API_TOKEN=ci-token \
+            agentflow:ci
           for i in $(seq 1 20); do
             curl -fsS http://127.0.0.1:8080/health && break
             sleep 1
           done
+          curl -fsS http://127.0.0.1:8080/ready
+          test "$(docker exec agentflow-ci id -u)" = "10001"
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/workflows)" = "401"
+          curl -fsS -H "Authorization: Bearer ci-token" http://127.0.0.1:8080/metrics
           curl -fsS http://127.0.0.1:8080/ | grep -q "AgentFlow 工作流编排器"
           docker logs agentflow-ci
           docker rm -f agentflow-ci

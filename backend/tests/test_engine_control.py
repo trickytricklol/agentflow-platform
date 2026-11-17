@@ -23,3 +23,18 @@ def test_parallel_cancel_skips_pending_nodes():
     result = WorkflowEngine(make_graph(), {"start": lambda n, v: "ok", "tool": lambda n, v: "done", "end": lambda n, v: "end"}).run_parallel(cancel_event=cancelled)
     assert result.nodes["start"].status == NodeStatus.SKIP
     assert result.nodes["end"].status == NodeStatus.SKIP
+
+
+def test_sequential_cancel_stops_before_handlers_run():
+    cancelled = threading.Event()
+    cancelled.set()
+    calls = []
+    engine = WorkflowEngine(make_graph(), {
+        "start": lambda n, v: calls.append("start"),
+        "tool": lambda n, v: calls.append("tool"),
+        "end": lambda n, v: calls.append("end"),
+    })
+    result = engine.run(cancel_event=cancelled)
+    assert result.status == NodeStatus.ERROR
+    assert calls == []
+    assert result.nodes["start"].error == "run cancelled"

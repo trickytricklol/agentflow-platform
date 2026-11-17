@@ -62,7 +62,7 @@ class WorkflowEngine:
         self.max_retries = max(0, max_retries)
         self._listener: Callable[[EngineEvent], None] | None = None
 
-    def run(self, context: dict[str, Any] | None = None, on_event: Callable[[EngineEvent], None] | None = None) -> RunResult:
+    def run(self, context: dict[str, Any] | None = None, on_event: Callable[[EngineEvent], None] | None = None, cancel_event: Event | None = None) -> RunResult:
         states = {node_id: NodeState(node_id) for node_id in self.graph.nodes}
         events: list[EngineEvent] = []
         values = dict(context or {})
@@ -71,6 +71,10 @@ class WorkflowEngine:
             for node_id in self.graph.topological_order():
                 state = states[node_id]
                 node = self.graph.nodes[node_id]
+                if cancel_event is not None and cancel_event.is_set():
+                    self._transition(state, NodeStatus.MARK, events)
+                    self._fail(state, events, "run cancelled")
+                    continue
                 if self.graph.parents[node_id] and not self._is_activated(node_id, states):
                     self._transition(state, NodeStatus.MARK, events)
                     self._transition(state, NodeStatus.SKIP, events)

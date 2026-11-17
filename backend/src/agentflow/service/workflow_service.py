@@ -6,8 +6,10 @@ from uuid import uuid4
 from typing import Any, Callable
 import copy
 import json
+import os
 from pathlib import Path
 import sqlite3
+from threading import RLock
 
 from agentflow.core import WorkflowGraph, WorkflowEngine, EngineEvent
 
@@ -31,19 +33,24 @@ class WorkflowRecord:
 class WorkflowRepository:
     def __init__(self):
         self._items: dict[str, WorkflowRecord] = {}
+        self._lock = RLock()
 
     def save(self, record: WorkflowRecord) -> WorkflowRecord:
-        self._items[record.id] = record
+        with self._lock:
+            self._items[record.id] = record
         return record
 
     def get(self, workflow_id: str) -> WorkflowRecord | None:
-        return self._items.get(workflow_id)
+        with self._lock:
+            return self._items.get(workflow_id)
 
     def list(self) -> list[WorkflowRecord]:
-        return list(self._items.values())
+        with self._lock:
+            return list(self._items.values())
 
     def delete(self, workflow_id: str) -> bool:
-        return self._items.pop(workflow_id, None) is not None
+        with self._lock:
+            return self._items.pop(workflow_id, None) is not None
 
 
 class JsonWorkflowRepository(WorkflowRepository):
@@ -55,19 +62,35 @@ class JsonWorkflowRepository(WorkflowRepository):
         self._load()
 
     def save(self, record: WorkflowRecord) -> WorkflowRecord:
-        result = super().save(record)
-        self._flush()
-        return result
+        with self._lock:
+            self._items[record.id] = record
+            self._flush()
+        return record
 
     def delete(self, workflow_id: str) -> bool:
-        removed = super().delete(workflow_id)
-        if removed:
-            self._flush()
-        return removed
+        with self._lock:
+            removed = self._items.pop(workflow_id, None) is not None
+            if removed:
+                self._flush()
+            return removed
 
     def _flush(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(json.dumps([serialize_record(item) for item in self._items.values()], ensure_ascii=False, indent=2), encoding="utf-8")
+        payload = json.dumps([serialize_record(item) for item in self._items.values()], ensure_ascii=False, indent=2)
+        temporary = self.path.with_name(self.path.name + ".tmp")
+        with temporary.open("w", encoding="utf-8") as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, self.path)
+        try:
+            directory = os.open(self.path.parent, os.O_RDONLY)
+            try:
+                os.fsync(directory)
+            finally:
+                os.close(directory)
+        except OSError:
+            pass
 
     def _load(self) -> None:
         if not self.path.exists():
@@ -86,6 +109,8 @@ class SqliteWorkflowRepository(WorkflowRepository):
 
     def __init__(self, path: str = "agentflow.db"):
         self.connection = sqlite3.connect(path, check_same_thread=False)
+        self.connection.execute("PRAGMA journal_mode=WAL")
+        self.connection.execute("PRAGMA busy_timeout=5000")
         super().__init__()
         self.connection.execute("CREATE TABLE IF NOT EXISTS workflows (id TEXT PRIMARY KEY, name TEXT NOT NULL, dsl TEXT NOT NULL, version INTEGER NOT NULL, published INTEGER NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL DEFAULT '', history TEXT NOT NULL DEFAULT '[]')")
         self._ensure_columns()
@@ -102,17 +127,19 @@ class SqliteWorkflowRepository(WorkflowRepository):
             self.connection.execute("ALTER TABLE workflows ADD COLUMN history TEXT NOT NULL DEFAULT '[]'")
 
     def save(self, record: WorkflowRecord) -> WorkflowRecord:
-        super().save(record)
-        self.connection.execute("INSERT OR REPLACE INTO workflows (id, name, dsl, version, published, created_at, updated_at, history) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (record.id, record.name, json.dumps(record.dsl, ensure_ascii=False), record.version, int(record.published), record.created_at, record.updated_at, json.dumps(record.history, ensure_ascii=False)))
-        self.connection.commit()
+        with self._lock:
+            self._items[record.id] = record
+            self.connection.execute("INSERT OR REPLACE INTO workflows (id, name, dsl, version, published, created_at, updated_at, history) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (record.id, record.name, json.dumps(record.dsl, ensure_ascii=False), record.version, int(record.published), record.created_at, record.updated_at, json.dumps(record.history, ensure_ascii=False)))
+            self.connection.commit()
         return record
 
     def delete(self, workflow_id: str) -> bool:
-        removed = super().delete(workflow_id)
-        if removed:
-            self.connection.execute("DELETE FROM workflows WHERE id = ?", (workflow_id,))
-            self.connection.commit()
-        return removed
+        with self._lock:
+            removed = self._items.pop(workflow_id, None) is not None
+            if removed:
+                self.connection.execute("DELETE FROM workflows WHERE id = ?", (workflow_id,))
+                self.connection.commit()
+            return removed
 
 
 class PostgresWorkflowRepository(WorkflowRepository):
@@ -137,89 +164,106 @@ class PostgresWorkflowRepository(WorkflowRepository):
                 self._items[row[0]] = WorkflowRecord(row[0], row[1], row[2], row[3], row[4], row[5], row[6] or row[5], history)
 
     def save(self, record: WorkflowRecord) -> WorkflowRecord:
-        super().save(record)
-        with self.connection.cursor() as cursor:
-            cursor.execute("INSERT INTO workflows (id, name, dsl, version, published, created_at, updated_at, history) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, dsl=EXCLUDED.dsl, version=EXCLUDED.version, published=EXCLUDED.published, updated_at=EXCLUDED.updated_at, history=EXCLUDED.history", (record.id, record.name, json.dumps(record.dsl, ensure_ascii=False), record.version, record.published, record.created_at, record.updated_at, json.dumps(record.history, ensure_ascii=False)))
-        self.connection.commit()
+        with self._lock:
+            self._items[record.id] = record
+            with self.connection.cursor() as cursor:
+                cursor.execute("INSERT INTO workflows (id, name, dsl, version, published, created_at, updated_at, history) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, dsl=EXCLUDED.dsl, version=EXCLUDED.version, published=EXCLUDED.published, updated_at=EXCLUDED.updated_at, history=EXCLUDED.history", (record.id, record.name, json.dumps(record.dsl, ensure_ascii=False), record.version, record.published, record.created_at, record.updated_at, json.dumps(record.history, ensure_ascii=False)))
+            self.connection.commit()
         return record
 
     def delete(self, workflow_id: str) -> bool:
-        removed = super().delete(workflow_id)
-        if removed:
-            with self.connection.cursor() as cursor:
-                cursor.execute("DELETE FROM workflows WHERE id = %s", (workflow_id,))
-            self.connection.commit()
-        return removed
+        with self._lock:
+            removed = self._items.pop(workflow_id, None) is not None
+            if removed:
+                with self.connection.cursor() as cursor:
+                    cursor.execute("DELETE FROM workflows WHERE id = %s", (workflow_id,))
+                self.connection.commit()
+            return removed
 
 
 class WorkflowService:
     def __init__(self, repository: WorkflowRepository | None = None):
         self.repository = repository or WorkflowRepository()
+        self._lock = RLock()
 
     def create(self, name: str, dsl: dict[str, Any]) -> WorkflowRecord:
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("workflow name is required")
         WorkflowGraph.from_dsl(dsl)  # validate before persistence
-        return self.repository.save(WorkflowRecord(str(uuid4()), name, dsl))
+        with self._lock:
+            return self.repository.save(WorkflowRecord(str(uuid4()), name.strip(), dsl))
 
     def update(self, workflow_id: str, name: str | None = None, dsl: dict[str, Any] | None = None) -> WorkflowRecord:
-        record = self._required(workflow_id)
-        if dsl is not None:
-            WorkflowGraph.from_dsl(dsl)
-            if dsl != record.dsl:
-                record.dsl = dsl
-                record.published = False
-        if name is not None:
-            if not name.strip():
-                raise ValueError("workflow name is required")
-            record.name = name.strip()
-        record.updated_at = _now()
-        return self.repository.save(record)
+        with self._lock:
+            record = self._required(workflow_id)
+            if dsl is not None:
+                WorkflowGraph.from_dsl(dsl)
+                if dsl != record.dsl:
+                    record.dsl = dsl
+                    record.published = False
+            if name is not None:
+                if not name.strip():
+                    raise ValueError("workflow name is required")
+                record.name = name.strip()
+            record.updated_at = _now()
+            return self.repository.save(record)
 
     def publish(self, workflow_id: str) -> WorkflowRecord:
-        record = self._required(workflow_id)
-        WorkflowGraph.from_dsl(record.dsl)
-        if record.published and record.history and record.history[-1].get("dsl") == record.dsl:
-            return record
-        next_version = max((entry["version"] for entry in record.history), default=record.version - 1) + 1
-        record.version = next_version
-        record.published = True
-        record.updated_at = _now()
-        record.history.append({"version": next_version, "dsl": copy.deepcopy(record.dsl), "published_at": record.updated_at})
-        record.history = record.history[-50:]
-        return self.repository.save(record)
+        with self._lock:
+            record = self._required(workflow_id)
+            WorkflowGraph.from_dsl(record.dsl)
+            if record.published and record.history and record.history[-1].get("dsl") == record.dsl:
+                return record
+            next_version = max((entry["version"] for entry in record.history), default=record.version - 1) + 1
+            record.version = next_version
+            record.published = True
+            record.updated_at = _now()
+            record.history.append({"version": next_version, "dsl": copy.deepcopy(record.dsl), "published_at": record.updated_at})
+            record.history = record.history[-50:]
+            return self.repository.save(record)
 
     def rollback(self, workflow_id: str, version: int | None = None) -> WorkflowRecord:
-        record = self._required(workflow_id)
-        if not record.history:
-            raise ValueError("workflow has no published version to roll back to")
-        if version is None:
-            if record.published and record.history[-1].get("version") == record.version and len(record.history) > 1:
-                target = record.history[-2]
+        if version is not None:
+            try:
+                version = int(version)
+            except (TypeError, ValueError) as exc:
+                raise ValueError("version must be an integer") from exc
+        with self._lock:
+            record = self._required(workflow_id)
+            if not record.history:
+                raise ValueError("workflow has no published version to roll back to")
+            if version is None:
+                if record.published and record.history[-1].get("version") == record.version and len(record.history) > 1:
+                    target = record.history[-2]
+                else:
+                    target = record.history[-1]
             else:
-                target = record.history[-1]
-        else:
-            target = next((entry for entry in reversed(record.history) if entry.get("version") == version), None)
-            if target is None:
-                raise ValueError(f"version not found: {version}")
-        if target.get("dsl") == record.dsl and record.published:
-            return record
-        record.dsl = copy.deepcopy(target["dsl"])
-        record.published = True
-        record.version = max(entry["version"] for entry in record.history) + 1
-        record.updated_at = _now()
-        record.history.append({"version": record.version, "dsl": copy.deepcopy(record.dsl), "published_at": record.updated_at})
-        record.history = record.history[-50:]
-        return self.repository.save(record)
+                target = next((entry for entry in reversed(record.history) if entry.get("version") == version), None)
+                if target is None:
+                    raise ValueError(f"version not found: {version}")
+            if target.get("dsl") == record.dsl and record.published:
+                return record
+            record.dsl = copy.deepcopy(target["dsl"])
+            record.published = True
+            record.version = max(entry["version"] for entry in record.history) + 1
+            record.updated_at = _now()
+            record.history.append({"version": record.version, "dsl": copy.deepcopy(record.dsl), "published_at": record.updated_at})
+            record.history = record.history[-50:]
+            return self.repository.save(record)
 
-    def run(self, workflow_id: str, handlers: dict[str, Any], context: dict[str, Any] | None = None, on_event: Callable[[EngineEvent], None] | None = None):
-        record = self._required(workflow_id)
-        if not record.published:
-            raise ValueError("workflow is not published")
-        return WorkflowEngine(WorkflowGraph.from_dsl(record.dsl), handlers).run(context, on_event=on_event)
+    def run(self, workflow_id: str, handlers: dict[str, Any], context: dict[str, Any] | None = None, on_event: Callable[[EngineEvent], None] | None = None, cancel_event=None):
+        with self._lock:
+            record = self._required(workflow_id)
+            if not record.published:
+                raise ValueError("workflow is not published")
+            dsl = copy.deepcopy(record.dsl)
+        return WorkflowEngine(WorkflowGraph.from_dsl(dsl), handlers).run(context, on_event=on_event, cancel_event=cancel_event)
 
     def delete(self, workflow_id: str) -> WorkflowRecord:
-        record = self._required(workflow_id)
-        self.repository.delete(workflow_id)
-        return record
+        with self._lock:
+            record = self._required(workflow_id)
+            self.repository.delete(workflow_id)
+            return record
 
     def _required(self, workflow_id: str) -> WorkflowRecord:
         record = self.repository.get(workflow_id)
@@ -230,3 +274,16 @@ class WorkflowService:
 
 def serialize_record(record: WorkflowRecord) -> dict[str, Any]:
     return asdict(record)
+
+
+def serialize_summary(record: WorkflowRecord) -> dict[str, Any]:
+    return {
+        "id": record.id,
+        "name": record.name,
+        "version": record.version,
+        "published": record.published,
+        "created_at": record.created_at,
+        "updated_at": record.updated_at,
+        "node_count": len(record.dsl.get("nodes", [])),
+        "last_published_at": record.history[-1]["published_at"] if record.history else None,
+    }

@@ -216,7 +216,8 @@ python evaluation/confirm_frozen.py runs/my-structure
 | 方法 | 路径 | 说明 |
 |---|---|---|
 | `GET` | `/` | 内置 Web 控制台 |
-| `GET` | `/health` | 健康检查与运行指标 |
+| `GET` | `/health` | 公开健康检查（容器/探针使用） |
+| `GET` | `/ready` | 公开就绪检查（存储可读、数据目录可写） |
 | `GET` | `/metrics` | 运行指标快照 |
 | `GET` | `/models` | 已注册模型列表 |
 | `POST` | `/models` | 注册模型 |
@@ -230,7 +231,7 @@ python evaluation/confirm_frozen.py runs/my-structure
 | `POST` | `/workflows/{id}/run` | 同步运行，返回节点状态与事件 |
 | `POST` | `/workflows/{id}/run/stream` | 实时 SSE 运行事件流 |
 
-鉴权默认关闭。开启后所有请求需携带 Bearer Token：
+鉴权默认关闭。开启后除 `/`、静态资源、`/health` 与 `/ready` 外的请求需携带 Bearer Token；开启鉴权但未设置 `AGENTFLOW_API_TOKEN` 时服务拒绝启动：
 
 ```bash
 AGENTFLOW_AUTH_ENABLED=1 AGENTFLOW_API_TOKEN=your-token python -m agentflow.api
@@ -243,10 +244,12 @@ curl -H "Authorization: Bearer your-token" http://127.0.0.1:8080/workflows
 
 ```bash
 cd deploy
+cp .env.example .env
+# 在 .env 中设置 AGENTFLOW_API_TOKEN 与 AGENTFLOW_CORS_ORIGINS
 docker compose up --build
 ```
 
-服务暴露在 `8080` 端口，根路径直接打开控制台；工作流数据写入命名卷 `agentflow-data`。生产环境请开启鉴权、替换默认 Token，并按需挂载模型服务或外部数据库。
+服务暴露在 `8080` 端口，根路径直接打开控制台；工作流数据写入命名卷 `agentflow-data`。Compose 默认开启鉴权并要求显式提供 Token，容器以非 root 用户运行、根文件系统只读、启用 `no-new-privileges` 与健康检查。生产环境请通过 `AGENTFLOW_CORS_ORIGINS` 限定允许来源，并按需挂载模型服务或外部数据库。
 
 ## 测试
 
@@ -256,7 +259,7 @@ $env:PYTEST_DISABLE_PLUGIN_AUTOLOAD="1"
 python -m pytest backend/tests -q
 ```
 
-测试覆盖 DSL 校验、拓扑与并行调度、分支与重试、五类节点、Provider、工具路由、Agent 调度、版本发布与回滚、工作流删除、四类持久化、实时事件监听、鉴权审计与优化算法。GitHub Actions 在 Python 3.11 上执行同一套测试，并构建容器镜像、启动服务校验控制台与健康检查。
+测试覆盖 DSL 校验、拓扑与并行调度、分支与重试、五类节点、Provider、工具路由、Agent 调度、版本发布与回滚、工作流删除、四类持久化、并发写入、实时事件监听与取消、鉴权审计、请求体上限与公开探针、优化算法。GitHub Actions 在 Python 3.11 上执行同一套测试，并构建容器镜像、启动服务校验控制台与健康检查。
 
 ## 目录结构
 
@@ -289,6 +292,7 @@ agentflow-platform/
 - [模型配置](docs/models.md)
 - [工作流优化](docs/optimization.md)
 - [部署与运维](docs/deployment.md)
+- [安全策略](SECURITY.md)
 
 ## License
 

@@ -4,13 +4,13 @@
 
 ## 鉴权
 
-默认关闭鉴权。设置 `AGENTFLOW_AUTH_ENABLED=1` 后，所有请求必须携带：
+默认关闭鉴权。设置 `AGENTFLOW_AUTH_ENABLED=1` 后，除 `/`、静态资源、`/health` 与 `/ready` 外的请求必须携带：
 
 ```http
 Authorization: Bearer <AGENTFLOW_API_TOKEN>
 ```
 
-Token 缺失或无效返回 `401`：
+开启鉴权但未设置 `AGENTFLOW_API_TOKEN` 时服务拒绝启动。Token 缺失或无效返回 `401`：
 
 ```json
 {"error": "Bearer token required"}
@@ -25,11 +25,20 @@ GET /health
 ```json
 {
   "status": "ok",
+  "service": "agentflow",
   "metrics": {
     "workflow_runs": 12
   }
 }
 ```
+
+## 就绪检查
+
+```http
+GET /ready
+```
+
+存储可列出且数据目录可写时返回 `200`，否则返回 `503`。
 
 ## 指标
 
@@ -41,7 +50,7 @@ GET /metrics
 {"workflow_runs": 12}
 ```
 
-`/metrics` 与 `/health` 内的 `metrics` 使用同一份计数器快照。
+`/metrics` 与 `/health` 内的 `metrics` 使用同一份计数器快照。请求体默认上限为 1 MiB，可通过 `AGENTFLOW_MAX_BODY_BYTES` 调整；超限返回 `413`，非法 JSON 与非对象请求体返回 `400`。跨域响应按 `AGENTFLOW_CORS_ORIGINS` 白名单回显来源。
 
 ## 模型
 
@@ -134,7 +143,7 @@ GET /workflows
 GET /workflows/{id}
 ```
 
-列表返回工作流对象数组；详情返回单个对象。不存在时返回 `404`：
+列表返回工作流摘要数组，字段为 `id/name/version/published/created_at/updated_at/node_count/last_published_at`；详情返回完整对象与 `history`。不存在时返回 `404`：
 
 ```json
 {"error": "workflow not found"}
@@ -260,8 +269,10 @@ event: node
 data: {"node_id": "start", "status": "SUCCESS", "attempt": 1, "error": null}
 
 event: complete
-data: {"status": "SUCCESS"}
+data: {"status": "SUCCESS", "cancelled": false}
 ```
+
+运行期间每 15 秒写入一行 `: ping` 心跳，避免代理或负载均衡器因空闲断开连接。客户端断开后，服务端在下一个节点开始前取消执行。
 
 ## 错误码
 
@@ -272,6 +283,9 @@ data: {"status": "SUCCESS"}
 | `400` | DSL 校验失败、工作流未发布、JSON 解析失败、缺少字段 |
 | `401` | 鉴权失败 |
 | `404` | 路径或工作流不存在 |
+| `411` | 请求使用 Transfer-Encoding，未提供 Content-Length |
+| `413` | 请求体超过 `AGENTFLOW_MAX_BODY_BYTES` |
+| `503` | `/ready` 检查未通过 |
 
 错误响应统一为：
 
