@@ -31,6 +31,18 @@ GET /health
 }
 ```
 
+## 指标
+
+```http
+GET /metrics
+```
+
+```json
+{"workflow_runs": 12}
+```
+
+`/metrics` 与 `/health` 内的 `metrics` 使用同一份计数器快照。
+
 ## 模型
 
 ### 列出模型
@@ -109,7 +121,9 @@ Content-Type: application/json
   "dsl": { "...": "..." },
   "version": 1,
   "published": false,
-  "created_at": "2026-11-17T08:30:00+00:00"
+  "created_at": "2026-11-17T08:30:00+00:00",
+  "updated_at": "2026-11-17T08:30:00+00:00",
+  "history": []
 }
 ```
 
@@ -126,13 +140,54 @@ GET /workflows/{id}
 {"error": "workflow not found"}
 ```
 
+### 更新草稿
+
+```http
+PUT /workflows/{id}
+Content-Type: application/json
+```
+
+```json
+{
+  "name": "工单分流 v2",
+  "dsl": { "...": "..." }
+}
+```
+
+DSL 变更会重新校验并把工作流标记为未发布；名称单独变更不影响发布状态。响应为更新后的完整工作流对象。
+
 ### 发布
 
 ```http
 POST /workflows/{id}/publish
 ```
 
-发布前重新校验 DSL，成功后 `published` 变为 `true`。未发布的工作流不能运行。
+发布前重新校验 DSL。首次发布版本为 `1`；每次 DSL 变更后的发布递增版本，并把完整 DSL 与发布时间写入 `history`。重复发布未变更的工作流不会产生新版本。
+
+```json
+{
+  "id": "7f6c2f5e-5b1a-4a0e-9a0e-2f6f9c8d1b3a",
+  "version": 2,
+  "published": true,
+  "history": [
+    {"version": 1, "dsl": { "...": "..." }, "published_at": "2026-11-17T08:30:00+00:00"},
+    {"version": 2, "dsl": { "...": "..." }, "published_at": "2026-11-17T08:45:00+00:00"}
+  ]
+}
+```
+
+### 回滚
+
+```http
+POST /workflows/{id}/rollback
+Content-Type: application/json
+```
+
+```json
+{"version": 1}
+```
+
+`version` 省略时回滚到上一个发布版本。回滚会把目标 DSL 恢复为当前 DSL、以新版本号重新发布，并追加一条历史记录，因此回滚本身也可审计。目标版本不存在时返回 `400`。
 
 ### 运行
 
@@ -183,7 +238,7 @@ Accept: text/event-stream
 {"context": {"ticket": "无法登录"}}
 ```
 
-响应为 `text/event-stream`，每个节点事件一帧，结束时发送 `complete`：
+响应为 `text/event-stream`。节点每次状态迁移时立即写入一帧，执行结束后发送 `complete`；运行异常时发送 `error`：
 
 ```text
 event: node

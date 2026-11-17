@@ -32,3 +32,29 @@ def test_failure_routes_to_fail_branch():
     assert result.status == NodeStatus.ERROR
     assert result.nodes["work"].status == NodeStatus.ERROR
     assert result.nodes["bad"].status == NodeStatus.SUCCESS
+
+
+def test_event_listener_receives_live_transitions():
+    graph = WorkflowGraph.from_dsl({"version": "1.0", "nodes": [
+        {"id": "start", "type": "start"}, {"id": "work", "type": "tool"}, {"id": "ok", "type": "end"}],
+        "edges": [{"source": "start", "target": "work"}, {"source": "work", "target": "ok", "when": "success"}]})
+    seen = []
+    result = WorkflowEngine(graph, {"start": lambda n, v: "started", "tool": lambda n, v: "done", "end": lambda n, v: v.get("work")}).run(on_event=seen.append)
+    assert result.status == NodeStatus.SUCCESS
+    assert [event.node_id for event in seen] == [event.node_id for event in result.events]
+    assert [event.status for event in seen] == [event.status for event in result.events]
+    assert seen[-1].node_id == "ok"
+
+
+def test_listener_fires_before_handler_returns():
+    graph = WorkflowGraph.from_dsl({"version": "1.0", "nodes": [
+        {"id": "start", "type": "start"}, {"id": "work", "type": "tool"}, {"id": "ok", "type": "end"}],
+        "edges": [{"source": "start", "target": "work"}, {"source": "work", "target": "ok", "when": "success"}]})
+    seen = []
+
+    def handler(node, values):
+        assert any(event.status == NodeStatus.RUNNING for event in seen)
+        return "done"
+
+    result = WorkflowEngine(graph, {"start": lambda n, v: None, "tool": handler, "end": lambda n, v: v.get("work")}).run(on_event=seen.append)
+    assert result.status == NodeStatus.SUCCESS

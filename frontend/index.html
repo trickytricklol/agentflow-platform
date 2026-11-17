@@ -7,11 +7,37 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header><strong>AgentFlow</strong><span>企业级多 Agent 工作流编排平台</span><button id="validate">校验 DSL</button><button id="save-workflow">保存工作流</button><button id="publish-workflow">发布并运行</button><button id="export">导出 DSL</button></header>
+  <header>
+    <strong>AgentFlow</strong><span class="tagline">企业级 AI 工作流编排与自进化平台</span>
+    <input id="workflow-name" value="未命名工作流" aria-label="工作流名称">
+    <input id="api-token" type="password" placeholder="API Token（鉴权开启时填写）" aria-label="API Token">
+    <button id="validate">校验 DSL</button><button id="save-workflow">保存</button><button id="publish-workflow">发布并运行</button><button id="export">导出 DSL</button>
+  </header>
   <main>
-    <aside><h3>节点</h3><button data-type="start">开始节点</button><button data-type="llm">大模型节点</button><button data-type="tool">工具节点</button><button data-type="agent">Agent 节点</button><button data-type="end">结束节点</button><p class="hint">点击节点按钮添加到画布。拖动节点调整位置；点击一个节点后再点击另一个节点建立连线。</p></aside>
+    <aside>
+      <h3>节点</h3>
+      <button data-type="start">开始节点</button>
+      <button data-type="llm">大模型节点</button>
+      <button data-type="tool">工具节点</button>
+      <button data-type="agent">Agent 节点</button>
+      <button data-type="end">结束节点</button>
+      <p class="hint">点击按钮添加节点；拖动节点调整位置。选中节点后点击画布空白处，再点击目标节点即可连线；选中节点按 Delete 删除。</p>
+    </aside>
     <section id="canvas"><svg id="edges"></svg><div id="nodes"></div></section>
-    <aside class="inspector"><h3>节点配置</h3><div id="empty">请选择一个节点</div><div id="form" hidden><label>ID<input id="node-id"></label><label>类型<input id="node-type" disabled></label><label>Prompt / 配置<textarea id="node-config"></textarea></label><button id="save">保存配置</button></div><pre id="output"></pre></aside>
+    <aside class="inspector">
+      <h3>节点配置</h3>
+      <div id="empty">请选择一个节点</div>
+      <div id="form" hidden>
+        <label>ID<input id="node-id" readonly></label>
+        <label>类型<input id="node-type" disabled></label>
+        <label>Prompt / 配置<textarea id="node-config"></textarea></label>
+        <button id="save">保存配置</button>
+        <button id="delete-node" class="danger">删除节点</button>
+      </div>
+      <h3>运行上下文</h3>
+      <textarea id="run-context" spellcheck="false">{}</textarea>
+      <pre id="output">就绪</pre>
+    </aside>
   </main>
   <script src="app.js"></script>
 </body>

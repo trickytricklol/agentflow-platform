@@ -13,7 +13,7 @@ AgentFlow 面向可私有化部署的 AI 工作流场景，围绕四个约束设
 
 ```text
 ┌─────────────────────────────────────────────────────────┐
-│ Web 控制台（frontend/）                                  │
+│ Web 控制台（frontend/，由 API 在根路径托管）                  │
 │ 画布 · 节点配置 · DSL 校验 · 保存/发布 · SSE 运行事件     │
 └──────────────────────────┬──────────────────────────────┘
                            │ HTTP / SSE
@@ -125,16 +125,18 @@ INIT ──MARK──▶ MARK ──▶ RUNNING ──▶ SUCCESS
 
 ### 事件
 
-每次状态迁移生成 `EngineEvent(node_id, status, attempt, error)`。API 的 `/run` 返回完整事件列表，`/run/stream` 以 SSE 逐条推送。
+每次状态迁移生成 `EngineEvent(node_id, status, attempt, error)`。引擎支持 `on_event` 监听器，在 `MARK`、`RUNNING`、`SUCCESS`、`ERROR`、`SKIP` 发生时即时回调；API 的 `/run` 汇总完整事件列表，`/run/stream` 通过监听器实时写入 SSE，而不是等运行结束后回放。
 
 ## 服务层与存储
 
 `WorkflowService` 负责工作流生命周期：
 
 ```text
-create(name, dsl) ──▶ 校验 ──▶ 持久化
-publish(id)       ──▶ 重新校验 ──▶ published = true
-run(id, handlers) ──▶ 必须已发布 ──▶ WorkflowEngine.run
+create(name, dsl)   ──▶ 校验 ──▶ 持久化
+update(id, name, dsl) ──▶ 重新校验 ──▶ 标记未发布
+publish(id)         ──▶ 重新校验 ──▶ 版本 +1 ──▶ 追加发布历史
+run(id, handlers)   ──▶ 必须已发布 ──▶ WorkflowEngine.run
+rollback(id, ver)   ──▶ 恢复目标 DSL ──▶ 以新版本重新发布
 ```
 
 | Repository | 适用场景 | 持久化方式 |

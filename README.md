@@ -20,7 +20,7 @@ AgentFlow 把 LLM、工具与多 Agent 协作组织成可校验、可观测、�
 | 工具中心 | 两阶段路由（词法召回 + 模型语义精排）、工具 Schema 参数校验、并行执行 |
 | Agent 协作 | Agent 注册、任务分发、线程池并行调度、结果汇聚与 fail-fast |
 | 工作流优化 | 严格奖励、失败反思变异、示例回放、神经嵌入、RBF-GP/EI、受限拓扑搜索、Pareto 合并、指令 × 示例联合搜索、安全约束、冻结确认与回滚 |
-| 版本管理 | 工作流创建、校验、发布、运行、SSE 事件流与回滚 DSL |
+| 版本管理 | 工作流创建、草稿更新、版本递增发布、运行、版本历史、回滚与 SSE 事件流 |
 | 治理 | Bearer Token 鉴权、RBAC、审计日志、运行指标 |
 | 持久化 | Memory / JSON / SQLite / PostgreSQL 四套 Repository |
 | 交付 | 核心运行时仅依赖 Python 标准库，附 Dockerfile、docker-compose 与 GitHub Actions |
@@ -65,7 +65,7 @@ curl http://127.0.0.1:8080/health
 # {"status": "ok", "metrics": {}}
 ```
 
-打开 `frontend/index.html` 即可使用可视化控制台。画布默认连接 `http://127.0.0.1:8080`，如需修改，编辑 `frontend/app.js` 顶部的 `API` 常量。
+浏览器访问 `http://127.0.0.1:8080` 即可使用内置控制台。控制台与 API 同源，支持画布编辑、节点配置、DSL 导出、保存/发布、版本回滚、运行上下文与实时事件流；开启鉴权后在右上角填写 API Token。
 
 ## 定义并运行一个工作流
 
@@ -215,15 +215,19 @@ python evaluation/confirm_frozen.py runs/my-structure
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
+| `GET` | `/` | 内置 Web 控制台 |
 | `GET` | `/health` | 健康检查与运行指标 |
+| `GET` | `/metrics` | 运行指标快照 |
 | `GET` | `/models` | 已注册模型列表 |
 | `POST` | `/models` | 注册模型 |
 | `GET` | `/workflows` | 工作流列表 |
 | `POST` | `/workflows` | 创建工作流（保存前执行 DSL 校验） |
-| `GET` | `/workflows/{id}` | 工作流详情 |
-| `POST` | `/workflows/{id}/publish` | 发布工作流 |
+| `GET` | `/workflows/{id}` | 工作流详情与版本历史 |
+| `PUT` | `/workflows/{id}` | 更新名称或 DSL 草稿 |
+| `POST` | `/workflows/{id}/publish` | 发布并递增版本 |
+| `POST` | `/workflows/{id}/rollback` | 回滚到指定版本 |
 | `POST` | `/workflows/{id}/run` | 同步运行，返回节点状态与事件 |
-| `POST` | `/workflows/{id}/run/stream` | SSE 运行事件流 |
+| `POST` | `/workflows/{id}/run/stream` | 实时 SSE 运行事件流 |
 
 鉴权默认关闭。开启后所有请求需携带 Bearer Token：
 
@@ -241,7 +245,7 @@ cd deploy
 docker compose up --build
 ```
 
-服务暴露在 `8080` 端口，工作流数据写入命名卷 `agentflow-data`。生产环境请开启鉴权、替换默认 Token，并按需挂载模型服务或外部数据库。
+服务暴露在 `8080` 端口，根路径直接打开控制台；工作流数据写入命名卷 `agentflow-data`。生产环境请开启鉴权、替换默认 Token，并按需挂载模型服务或外部数据库。
 
 ## 测试
 
@@ -251,7 +255,7 @@ $env:PYTEST_DISABLE_PLUGIN_AUTOLOAD="1"
 python -m pytest backend/tests -q
 ```
 
-测试覆盖 DSL 校验、拓扑与并行调度、分支与重试、五类节点、Provider、工具路由、Agent 调度、版本发布、四类持久化、鉴权审计与优化算法。GitHub Actions 在 Python 3.11 上执行同一套测试。
+测试覆盖 DSL 校验、拓扑与并行调度、分支与重试、五类节点、Provider、工具路由、Agent 调度、版本发布与回滚、四类持久化、实时事件监听、鉴权审计与优化算法。GitHub Actions 在 Python 3.11 上执行同一套测试。
 
 ## 目录结构
 
@@ -269,7 +273,7 @@ agentflow-platform/
 │   │   ├── security/           # 鉴权、审计、指标
 │   │   └── optimization/       # 奖励、变异、嵌入、GP/EI、结构搜索、发布门
 │   └── tests/                  # pytest 测试集
-├── frontend/                   # 零依赖可视化画布
+├── frontend/                   # 零依赖可视化控制台
 ├── deploy/                     # Dockerfile 与 docker-compose
 ├── examples/                   # 可执行示例
 ├── evaluation/                 # 数据集与评估工具

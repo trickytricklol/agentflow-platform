@@ -11,7 +11,7 @@ python -m agentflow.api
 PYTHONPATH=backend/src python -m agentflow.api
 ```
 
-默认监听 `127.0.0.1:8080`，工作流数据写入当前目录的 `workflows.json`，审计日志写入 `audit.jsonl`。
+默认监听 `127.0.0.1:8080`，工作流数据写入当前目录的 `workflows.json`，审计日志写入 `audit.jsonl`。浏览器访问 `http://127.0.0.1:8080` 使用内置控制台；开启鉴权后需在控制台填写 Token。
 
 ## 环境变量
 
@@ -32,13 +32,15 @@ Provider 选择顺序：`AGENTFLOW_OLLAMA_URL` → `AGENTFLOW_OPENAI_BASE_URL` �
 ## Docker
 
 ```bash
-docker build -t agentflow-api ./backend
+docker build -f backend/Dockerfile -t agentflow-api .
 docker run --rm -p 8080:8080 \
   -e AGENTFLOW_HOST=0.0.0.0 \
   -e AGENTFLOW_DATA_DIR=/app/data \
   -v agentflow-data:/app/data \
   agentflow-api
 ```
+
+构建上下文为仓库根目录，镜像同时包含后端与控制台；容器内 `AGENTFLOW_HOST` 默认已设为 `0.0.0.0`。
 
 ## Docker Compose
 
@@ -88,9 +90,9 @@ service = WorkflowService(PostgresWorkflowRepository("postgresql://user:pass@hos
 
 ## 可观测性
 
-- `GET /health` 返回服务状态与计数器快照。
-- `audit.jsonl` 逐行记录 `workflow.create`、`workflow.publish`、`workflow.run` 等动作，包含主体、资源、详情与 UTC 时间戳。
-- SSE 端点 `/workflows/{id}/run/stream` 输出 `event: node` 与 `event: complete`，可直接接入前端或日志采集。
+- `GET /health` 返回服务状态与计数器快照，`GET /metrics` 只返回计数器。
+- `audit.jsonl` 逐行记录 `workflow.create`、`workflow.update`、`workflow.publish`、`workflow.rollback`、`workflow.run` 等动作，包含主体、资源、详情与 UTC 时间戳。
+- SSE 端点 `/workflows/{id}/run/stream` 在节点状态变化时实时输出 `event: node`，结束时输出 `event: complete`，异常时输出 `event: error`，可直接接入前端或日志采集。
 
 ## 反向代理
 
@@ -108,7 +110,7 @@ location / {
 
 ## 运行检查清单
 
-1. `/health` 返回 `status: ok`。
+1. `/health` 返回 `status: ok`，根路径返回控制台页面。
 2. 已注册至少一个可用模型，或配置了 `AGENTFLOW_OLLAMA_URL` / `AGENTFLOW_OPENAI_BASE_URL`。
 3. 工作流保存前通过 DSL 校验，运行前已发布。
 4. 生产环境已开启鉴权并替换默认 Token。

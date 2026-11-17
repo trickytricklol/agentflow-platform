@@ -1,6 +1,7 @@
 FROM python:3.11-slim
 WORKDIR /app
-COPY src ./src
+COPY backend/src ./src
+COPY frontend ./frontend
 ENV PYTHONPATH=/app/src \
     AGENTFLOW_HOST=0.0.0.0 \
     AGENTFLOW_PORT=8080 \

@@ -7,14 +7,14 @@
 候选由三部分基因组成：
 
 ```text
-genome = (topology, instruction, demo_ids, tool_config)
+genome = (topology, instruction, example_ids, tool_config)
 ```
 
 | 维度 | 取值 |
 |---|---|
 | `topology` | `direct`（单节点决策）、`decompose`（路由/优先级双专家 + 汇总）、`review`（初判 + 复核） |
 | `instruction` | 基线指令或由失败反馈生成的候选指令 |
-| `demo_ids` | 训练集中的示例组合，可为空 |
+| `example_ids` | 训练集中的示例组合，可为空 |
 | `tool_config` | 工具节点配置（保持白名单约束） |
 
 拓扑搜索只在预定义模板内进行，候选必须先通过 DAG 校验才允许执行；引擎不会执行模型生成的代码。
@@ -68,10 +68,10 @@ optimizer = GaussianProcessOptimizer(embedding, diversity_weight=0.2)
 `SafeFlow` 将文本、拓扑与示例集编码为混合向量：
 
 ```text
-phi(x) = [sqrt(w_text) * E(prompt), sqrt(w_topology) * onehot(topology), sqrt(w_demo) * multihot(demo_ids)]
+phi(x) = [sqrt(w_text) * E(prompt), sqrt(w_topology) * onehot(topology), sqrt(w_example) * multihot(example_ids)]
 ```
 
-默认权重 `w_text=0.55`、`w_topology=0.25`、`w_demo=0.20`。采集函数同时考虑质量、可发布性与推理成本：
+默认权重 `w_text=0.55`、`w_topology=0.25`、`w_example=0.20`。采集函数同时考虑质量、可发布性与推理成本：
 
 ```text
 a(x) = EI_quality(x) * P(feasible(x)) / estimated_cost(x)^alpha
@@ -93,7 +93,7 @@ a(x) = EI_quality(x) * P(feasible(x)) / estimated_cost(x)^alpha
 ### Pareto 合并与联合搜索
 
 - `pareto.py` 支持实例级与 case×objective 的 Pareto 前沿、互补父代配对与合并候选；合并结果仍需完整训练与验证才能发布。
-- `demonstrations.py` 生成空示例、标签覆盖、失败优先与随机四类示例集，与指令组合成联合候选池；随机基线与 GP/EI 使用相同评估预算。
+- 示例集模块生成空示例、标签覆盖、失败优先与随机四类示例集，与指令组合成联合候选池；随机基线与 GP/EI 使用相同评估预算。
 
 ## 运行
 

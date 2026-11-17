@@ -8,3 +8,13 @@ def test_json_repository_survives_reload(tmpdir):
     repo.save(record)
     restored = JsonWorkflowRepository(path)
     assert restored.get("w1").name == "demo"
+
+
+def test_json_repository_keeps_release_history(tmpdir):
+    path = tmpdir.join("workflows.json")
+    repo = JsonWorkflowRepository(path)
+    record = WorkflowRecord("w1", "history", {"nodes": [], "edges": []}, version=2, published=True, history=[{"version": 1, "dsl": {"nodes": []}, "published_at": "now"}])
+    repo.save(record)
+    restored = JsonWorkflowRepository(path).get("w1")
+    assert restored.version == 2
+    assert restored.history[0]["version"] == 1

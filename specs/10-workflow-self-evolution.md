@@ -7,12 +7,12 @@
 ## 候选模型
 
 ```text
-genome = (topology, instruction, demo_ids, tool_config)
+genome = (topology, instruction, example_ids, tool_config)
 ```
 
 - `topology`：`direct`、`decompose`、`review` 三种受限模板。
 - `instruction`：基线指令或失败反馈生成的候选指令。
-- `demo_ids`：训练集示例组合。
+- `example_ids`：训练集示例组合。
 - `tool_config`：白名单内的工具配置。
 
 ## 流程

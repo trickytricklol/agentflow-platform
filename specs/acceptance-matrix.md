@@ -10,7 +10,8 @@
 | OpenAI 兼容与 Ollama Provider | 已实现 | `test_provider.py` |
 | JSON / SQLite 持久化 | 已实现 | `test_persistence.py`、`test_sqlite.py` |
 | PostgreSQL 持久化 | 已实现（需 `psycopg`） | 可选依赖测试 |
-| HTTP API 与 SSE | 已实现 | 端到端运行校验 |
+| HTTP API、内置控制台与 SSE | 已实现 | 端到端运行校验 |
+| 版本递增发布、历史与回滚 | 已实现 | `test_service.py`、`test_persistence.py` |
 | 鉴权 / RBAC / 审计 / 指标 | 已实现 | `test_security.py` |
 | 可视化画布 | 已实现 | 浏览器验收 |
 | RBF GP / EI 有限预算选样 | 已实现 | `test_evolution.py` |
